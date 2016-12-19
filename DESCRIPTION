@@ -6,8 +6,9 @@ Imports: tidyverse,
     janitor,
     bookdown,
     cnc,
-    abjutils
-Remotes: 
+    abjutils,
+    plotly
+Remotes:
     rstudio/bookdown,
     abjur/cnc,
     abjur/abjutils
