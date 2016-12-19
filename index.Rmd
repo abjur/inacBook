@@ -11,6 +11,8 @@ link-citations: yes
 description: "Análise do Cadastro Nacional de Condenações Cíveis por Ato de Improbidade Administrativa e Inelegibilidade."
 ---
 
+# Preâmbulo
+
 Este é um relatório escrito em **Markdown** descrevendo um estudo realizado para a corregedoria do Tribunal de Justiça de São Paulo. O estudo em questão teve a finalidade de auxiliar a tomada de decisão na criação das varas especializadas em direito comercial na Comarca de São Paulo.
 
 Para compilar este relatório, você precisará da versão de desenvolvimento do pacote bookdown disponível no Github do rstudio:
