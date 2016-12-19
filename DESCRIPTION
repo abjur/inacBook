@@ -1,0 +1,13 @@
+Package: abjBookTemplate
+Title: Does not matter.
+Version: 0.0.1
+Imports: tidyverse,
+    stringr,
+    janitor,
+    bookdown,
+    cnc,
+    abjutils
+Remotes: 
+    rstudio/bookdown,
+    abjur/cnc,
+    abjur/abjutils
