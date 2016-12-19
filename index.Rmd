@@ -1,0 +1,36 @@
+--- 
+title: "Cadastro Nacional de Condenações Cíveis por Ato de Improbidade Administrativa e Inelegibilidade"
+author: "Associação Brasileira de Jurimetria"
+date: "`r Sys.Date()`"
+site: bookdown::bookdown_site
+output: bookdown::gitbook
+documentclass: book
+bibliography: [book.bib]
+biblio-style: apalike
+link-citations: yes
+description: "Análise do Cadastro Nacional de Condenações Cíveis por Ato de Improbidade Administrativa e Inelegibilidade."
+---
+
+Este é um relatório escrito em **Markdown** descrevendo um estudo realizado para a corregedoria do Tribunal de Justiça de São Paulo. O estudo em questão teve a finalidade de auxiliar a tomada de decisão na criação das varas especializadas em direito comercial na Comarca de São Paulo.
+
+Para compilar este relatório, você precisará da versão de desenvolvimento do pacote bookdown disponível no Github do rstudio:
+
+```{r, eval=FALSE}
+devtools::install_github("rstudio/bookdown")
+```
+
+Cada arquivo Rmd contém um e apenas um capítulo, e cada capítulo é definido pelo primeiro nível de cabeçalho #.
+
+Para compilar este documento em PDF, você precisará utilizar XeLaTeX.
+
+```{r echo=FALSE, warning=FALSE, message=FALSE}
+library(tidyverse)
+library(stringr)
+library(lubridate)
+library(janitor)
+library(cnc)
+data(tidy_cnc, package = 'cnc')
+tidy_cnc
+```
+
+
