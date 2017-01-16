@@ -6,9 +6,10 @@ Imports: tidyverse,
     janitor,
     bookdown,
     cnc,
+    abjData,
     abjutils,
     plotly
 Remotes:
     rstudio/bookdown,
     abjur/cnc,
-    abjur/abjutils
+    abjur/abjData
