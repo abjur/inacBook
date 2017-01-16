@@ -13,7 +13,7 @@ description: "Análise do Cadastro Nacional de Condenações Cíveis por Ato de 
 
 # Preâmbulo
 
-Este é um relatório escrito em **Markdown** descrevendo um estudo realizado para a corregedoria do Tribunal de Justiça de São Paulo. O estudo em questão teve a finalidade de auxiliar a tomada de decisão na criação das varas especializadas em direito comercial na Comarca de São Paulo.
+Este é um relatório escrito em **Markdown** descrevendo um estudo realizado pela Associação Brasileira de Jurimetria (ABJ) para o Instituto Não Aceito Corrupção. O estudo em questão teve a finalidade de compreender o crime de improbidade admnistrativa analisando os admnistradores públicos que constam no Cadastro Nacional de Condenações Cíveis por Ato de Improbidade Administrativa e Inelegibilidade (CNC) do Conselho Nacional de Justiça (CNJ).
 
 Para compilar este relatório, você precisará da versão de desenvolvimento do pacote bookdown disponível no Github do rstudio:
 
