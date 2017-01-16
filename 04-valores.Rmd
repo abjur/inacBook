@@ -1,0 +1,281 @@
+```{r, var_setup, echo = F}
+
+total_de_multas_sp <- tidy_cnc %>% 
+  filter(uf == 'SP') %>% 
+  with(sum(vl_multa, na.rm = T))
+
+```
+
+# Valores envolvidos
+
+Na base de dados temos três variáveis sobre valores: i) pagamento de multas, ii) ressarcimento integral do dano e iii) perda de bens ou valores acrescidos ilicitamente ao patrimônio. Vamos analisar cada um desses valores separadamente.
+
+## Pagamento de multas
+
+A Tabela \@ref(tab:tab1) mostra a proporção de condenações em que houve multa. Observe que tivemos multas em aproximadamente um terço dos casos. No entanto, somente 9.817 casos possuem valores de multa maiores ou iguais a zero ou menores que um bilhão.
+
+```{r tab1, caption='tab1'}
+tidy_cnc %>% 
+  replace_na(list(teve_multa = 'não')) %>% 
+  janitor::tabyl(teve_multa, sort = TRUE) %>% 
+  janitor::add_totals_row() %>% 
+  mutate(percent = scales::percent(percent)) %>% 
+  knitr::kable(booktabs = TRUE,
+               caption = 'Proporção de multas na base.')
+```
+
+O gráfico \@ref(fig:graf1) mostra que existem alguns tipos de processos em que a aplicação de multas é mais frequente. Em processos criminais, por exemplo, as multas são muito mais raras do que em processos cíveis. Dentre esses, inclusive, os processos de Danos ao Erário e Enriquecimento Ilícito destacam-se, com aproximadamente 75% das sentenças prevendo o pagamento de multas.
+
+```{r graf1, fig.cap = 'graf1', echo = F}
+
+p <- tidy_cnc %>% 
+  replace_na(list(teve_multa = 'nao')) %>% 
+  mutate(teve_multa = ifelse(teve_multa == 'sim', 
+                             ifelse(vl_multa == 0, 'multa_zero', teve_multa),
+                             teve_multa)) %>% 
+  group_by(assunto_nm_1) %>%
+  count(teve_multa) %>% 
+  spread(teve_multa, n) %>% 
+  replace_na(list(sim = 0, nao = 0, multa_zero = 0)) %>% 
+  mutate(total = sim + nao + multa_zero,
+         sim_n = sim/total,
+         sim = sim/total,
+         assunto_nm_1 = factor(assunto_nm_1,
+         levels = assunto_nm_1[order(sim_n)])) %>% 
+  filter(total > 100) %>% 
+  ggplot(aes(x = assunto_nm_1, y = sim,
+             fill = sim_n)) +
+  geom_bar(stat = 'identity') +
+  coord_flip() + 
+  theme_bw() +
+  scale_fill_gradient(low = 'red', high = 'blue') +
+  theme(axis.title.y = element_text(angle = 0),
+        legend.position = 'none') +
+  scale_y_continuous(labels = scales::percent) +
+  xlab("Crimes") +
+  ylab("")
+
+p
+```
+
+Como o valor é uma variável bastante assimétrica, é necessário elaborar algumas estatísticas especiais para comparação de valores. A Figura \@ref(fig:perc) compara os percentis[^percentil] dos valores das multas para pessoas físicas e jurídicas. É possível observar que os valores envolvidos para pessoas jurídicas são sistematicamente maiores do que os valores envolvidos para pessoas físicas. No futuro, vamos realizar esse tipo de comparação para diversas subpopulações da base de dados.
+
+[^percentil]: um percentil de $x$% é uma quantidade que faz com que $x$% das observações da amostra esteja abaixo desse valor.
+
+```{r perc, fig.cap="Gráfico quantil-quantil do valor da multa por tipo de pessoa (escala log).", out.width="80%", fig.align='center'}
+p <- tidy_cnc %>% 
+  filter(teve_multa == 'sim', vl_multa < 1e9, vl_multa > 10) %>% 
+  group_by(tipo_pessoa) %>% 
+  do(n = nrow(.),
+     r = quantile(.$vl_multa, probs = 0:100 / 100)) %>% 
+  unnest(n) %>% 
+  unnest(r) %>% 
+  group_by(tipo_pessoa) %>% 
+  mutate(id = 1:n()) %>% 
+  ungroup() %>% 
+  mutate(tipo_pessoa = if_else(tipo_pessoa == 'F', paste0('Física (n = ', n, ')'),
+                               paste0('Jurídica (n = ', n, ')'))) %>% 
+  select(-n) %>% 
+  spread(tipo_pessoa, r) %>% 
+  ggplot(aes_(x = as.name(names(.)[2]), y = as.name(names(.)[3]))) +
+  geom_point() +
+  geom_abline(slope = 1, intercept = 0) +
+  scale_x_log10(labels = scales::dollar) +
+  scale_y_log10(labels = scales::dollar) +
+  theme_bw()
+
+plotly::ggplotly(p)
+```
+
+A tabela \@ref(tab:maiorN) mostra as 20 pessoas com maior quantidade de multas. Observe que apesar de observarmos pessoas com pelo menos 12 multas cada, 97% do valor de multas está concentrado nas multas restantes.
+
+```{r maiorN}
+tidy_cnc %>% 
+  filter(teve_multa == 'sim', vl_multa < 1e9) %>% 
+  mutate(nome = sprintf('%06s / %s', id_pessoa, toupper(nm_pessoa))) %>% 
+  mutate(nome = forcats::fct_infreq(nome),
+         nome = forcats::fct_lump(nome, n = 20)) %>% 
+  group_by(nome) %>% 
+  summarise(n_multas = n(), vl_total = sum(vl_multa)) %>%
+  mutate(`% total` = n_multas / sum(n_multas)) %>% 
+  mutate(`% valor total` = vl_total / sum(vl_total)) %>% 
+  # arrange(desc(n_multas)) %>% 
+  add_totals_row() %>% 
+  mutate(`% valor total` = scales::percent(`% valor total`)) %>% 
+  mutate(`% total` = scales::percent(`% total`)) %>% 
+  mutate(vl_total = scales::dollar(vl_total)) %>% 
+  knitr::kable(booktabs = TRUE, 
+               caption = 'Pessoas com maiores quantidade de multas, valor agregado e proporção do total.')
+```
+
+A tabela \@ref(tab:maiorV) mostra os 20 casos com maior valor de multas. Observe que somente esses casos concentram quase metade do valor total das multas.
+
+```{r maiorV}
+tidy_cnc %>% 
+  filter(teve_multa == 'sim', vl_multa < 1e9) %>% 
+  select(nome = nm_pessoa, tipo_pessoa, vl_multa) %>% 
+  mutate(nome = toupper(nome)) %>% 
+  arrange(desc(vl_multa)) %>% 
+  mutate(`% acu. vl total` = cumsum(vl_multa) / sum(vl_multa)) %>% 
+  # mutate(nome = forcats::fct_reorder(nome, fun = sum, vl_multa),
+  #        nome = forcats::fct_lump(nome, n = 20)) %>% 
+  unite(aux, nome, tipo_pessoa) %>% 
+  add_totals_row() %>% 
+  separate(aux, c('nome', 'tipo_pessoa'), sep = '_', fill = 'right') %>% 
+  mutate(`% acu. vl total` = if_else(nome == 'Total', NA_real_, `% acu. vl total`)) %>% 
+  mutate(`% acu. vl total` = scales::percent(`% acu. vl total`)) %>% 
+  mutate(vl_multa = scales::dollar(vl_multa)) %>% 
+  slice(c(1:20, nrow(.))) %>%
+  replace_na(list(tipo_pessoa = '')) %>% 
+  mutate(`% acu. vl total` = if_else(`% acu. vl total` == 'NA%', '', `% acu. vl total`)) %>% 
+  knitr::kable(booktabs = TRUE, 
+               caption = 'Condenações com multas de maior valor com informação do tipo de pessoa e proporção acumulada da soma dos valores.')
+```
+
+Agora vamos analisar a distribuição geográfica da condenação ao pagamento de multas. A Figura \ref{fig:mapa_multa_abs} mostra o total pago em multas em cada estado, em valores absolutos. Como esperado, o estado de São Paulo é o mais abundante em multas, onde R$`r total_de_multas_sp` foram cobrados. Mais do que isso, a Figura \ref{fig:mapa_multa_relativo, echo = F} complementa essa conclusão mostrando que mesmo comparando os totais de multas dividos pela população dos estados, São Paulo é muito maior do que os demais.
+
+```{r mapa_multa_abs}
+
+N <- 12
+
+# cortes <- c(0, rep(c(1,5), N)*rep(10^(1:N), each = 2)) 
+
+cortes <- c(0, 10^(1:N))
+
+brks <- cut(c(cortes), breaks = c(cortes))
+
+lbs <- c("NA","<10","10<100","100<1M",
+         "1M<10M","10M<100M","100M<1MM","1MM<10MM",
+         "10MM<100MM","100MM<1Bi","1Bi<10Bi", "10Bi<100Bi",
+         "100Bi<1Tri")
+
+ p <- tidy_cnc %>%
+    filter(teve_multa == 'sim') %>%
+    mutate(id = uf) %>%
+    group_by(id) %>%
+    summarise(vl_multa = sum(vl_multa, na.rm = T)) %>%
+    mutate(vl_multa = cut(vl_multa, cortes, dig.lab=5)) %>% 
+    inner_join(br_uf_map) %>% {
+      ggplot(.) +
+        geom_map(aes(x = long, y = lat, map_id = id, fill = vl_multa),
+                 color = 'gray30', map = ., data = .) +
+scale_fill_brewer(palette = 'PuRd', breaks = brks, labels = lbs,
+                  name = 'Valor da multa') +
+        coord_equal() +
+        theme_void()
+    }
+  p
+
+``` 
+
+```{r mapa_multa_relativo}
+
+ p <- tidy_cnc %>%
+    filter(teve_multa == 'sim') %>%
+    mutate(id = uf) %>%
+    group_by(id) %>%
+    summarise(vl_multa = sum(vl_multa)) %>%
+    inner_join(pnud_uf, 'id') %>%
+    mutate(multa_p_cpt = vl_multa / popt * 100000) %>%
+    mutate(vl_multa = cut(multa_p_cpt, cortes, dig.lab=5)) %>% 
+    inner_join(br_uf_map) %>% {
+      ggplot(.) +
+        geom_map(aes(x = long, y = lat, map_id = id, fill = vl_multa),
+                 color = 'gray30', map = ., data = .) +
+scale_fill_brewer(palette = 'PuRd', breaks = brks, labels = lbs, name = "Multa per capita") +        coord_equal() +
+        theme_void()
+    }
+  p
+
+```
+
+## Ressarcimentos
+
+Complementando a análise sobre as punições aplicadas aos cadastrados no CNIA, nesta sessão analisaremos os ressarcimentos de patrimônio estatal e/ou fruto de enriquerimento ilícito. A Tabela \@ref(tab:tab3) mostra a proporção de condenações em que houve ressarcimento. Observe que tivemos multas em aproximadamente um quinto dos casos, menor do que nos casos em que houve multa, mas na Figura \@ref(fig:graf2) verifica-se que os processos em que há ressarcimento são aqueles com as maiores proporções de multas aplicadas. 
+
+```{r tab3, caption='tab3'}
+tidy_cnc %>% 
+  replace_na(list(teve_ressarcimento = 'não')) %>% 
+  janitor::tabyl(teve_ressarcimento, sort = TRUE) %>% 
+  janitor::add_totals_row() %>% 
+  mutate(percent = scales::percent(percent)) %>% 
+  knitr::kable(booktabs = TRUE,
+               caption = 'Proporção de ressarcimentos na base.')
+```
+
+```{r graf2, fig.cap = 'graf2', echo = F}
+
+p <- tidy_cnc %>% 
+  replace_na(list(teve_ressarcimento = 'nao')) %>% 
+  mutate(teve_ressarcimento = ifelse(teve_ressarcimento == 'sim', 
+                             ifelse(vl_ressarcimento == 0, 'ress_zero', teve_ressarcimento),
+                             teve_ressarcimento)) %>% 
+  group_by(assunto_nm_1) %>%
+  count(teve_ressarcimento) %>% 
+  spread(teve_ressarcimento, n) %>% 
+  replace_na(list(sim = 0, nao = 0, ress_zero = 0)) %>% 
+  mutate(total = sim + nao + ress_zero,
+         sim_n = sim/total,
+         sim = sim/total,
+         assunto_nm_1 = factor(assunto_nm_1,
+         levels = assunto_nm_1[order(sim_n)])) %>% 
+  filter(total > 100) %>% 
+  ggplot(aes(x = assunto_nm_1, y = sim,
+             fill = sim_n)) +
+  geom_bar(stat = 'identity') +
+  coord_flip() + 
+  theme_bw() +
+  scale_fill_gradient(low = 'red', high = 'blue') +
+  theme(axis.title.y = element_text(angle = 0),
+        legend.position = 'none') +
+  scale_y_continuous(labels = scales::percent) +
+  xlab("Crimes") +
+  ylab("")
+
+p
+```
+
+Com relação à disposição geográfica, por outro lado, a Figura \ref{fig:ress_abs} mostra que a distribuição dos ressarcimentos é menos desigual do que a distribuição das multas. Além disso, exceto por São Paulo, a figura também mostra que os valores ressarcidos são menores do que as respectivas multas.
+
+A Figura \ref{fig:ress_rel} mostra que os estados com maior quantidade de ressarcimento per capita são os estados de São Paulo, Acre, Rondônia, Distrito Federal, Maranhão e Paraíba.
+
+```{r ress_abs, echo = F}
+
+ p <- tidy_cnc %>%
+    filter(teve_ressarcimento == 'sim') %>%
+    mutate(id = uf) %>%
+    group_by(id) %>%
+    summarise(vl_ressarcimento = sum(vl_ressarcimento)) %>%
+    mutate(vl_ressarcimento = cut(vl_ressarcimento, cortes)) %>% 
+    inner_join(br_uf_map) %>% {
+      ggplot(.) +
+        geom_map(aes(x = long, y = lat, map_id = id, fill = vl_ressarcimento), color = 'gray30', map = ., data = .) +
+        scale_fill_brewer(palette = 'PuRd', breaks = brks, labels = lbs, name = 'Valor do ressarcimento') + 
+        coord_equal() +
+        theme_void()
+    }
+  p
+  
+```
+
+```{r, ress_rel, echo = F}
+
+ p <- tidy_cnc %>%
+    filter(teve_ressarcimento == 'sim') %>%
+    mutate(id = uf) %>%
+    group_by(id) %>%
+    summarise(vl_ressarcimento = sum(vl_ressarcimento)) %>%
+    inner_join(pnud_uf, 'id') %>%
+    mutate(vl_ressarcimento = vl_ressarcimento / popt * 100000) %>%
+    mutate(vl_ressarcimento = cut(vl_ressarcimento, cortes)) %>% 
+  
+    inner_join(br_uf_map) %>% {
+      ggplot(.) +
+        geom_map(aes(x = long, y = lat, map_id = id, fill = vl_ressarcimento), color = 'gray30', map = ., data = .) +
+        scale_fill_brewer(palette = 'PuRd', breaks = brks, labels = lbs, name = 'Valor do ressarcimento') + 
+        coord_equal() +
+        theme_void()
+    }
+  p
+  
+```
