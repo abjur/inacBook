@@ -8,7 +8,7 @@
   <title>Cadastro Nacional de Condenações Cíveis por Ato de Improbidade Administrativa e Inelegibilidade</title>
   <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
   <meta name="description" content="Análise do Cadastro Nacional de Condenações Cíveis por Ato de Improbidade Administrativa e Inelegibilidade.">
-  <meta name="generator" content="bookdown 0.3.5 and GitBook 2.6.7">
+  <meta name="generator" content="bookdown 0.3.7 and GitBook 2.6.7">
 
   <meta property="og:title" content="Cadastro Nacional de Condenações Cíveis por Ato de Improbidade Administrativa e Inelegibilidade" />
   <meta property="og:type" content="book" />
@@ -26,7 +26,7 @@
 <meta name="author" content="Associação Brasileira de Jurimetria">
 
 
-<meta name="date" content="2016-12-19">
+<meta name="date" content="2017-01-16">
 
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -124,6 +124,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <li class="chapter" data-level="4" data-path="perfil-dos-condenados.html"><a href="perfil-dos-condenados.html"><i class="fa fa-check"></i><b>4</b> Perfil dos condenados</a></li>
 <li class="chapter" data-level="5" data-path="valores-envolvidos.html"><a href="valores-envolvidos.html"><i class="fa fa-check"></i><b>5</b> Valores envolvidos</a><ul>
 <li class="chapter" data-level="5.1" data-path="valores-envolvidos.html"><a href="valores-envolvidos.html#pagamento-de-multas"><i class="fa fa-check"></i><b>5.1</b> Pagamento de multas</a></li>
+<li class="chapter" data-level="5.2" data-path="valores-envolvidos.html"><a href="valores-envolvidos.html#ressarcimentos"><i class="fa fa-check"></i><b>5.2</b> Ressarcimentos</a></li>
 </ul></li>
 <li class="chapter" data-level="" data-path="references.html"><a href="references.html"><i class="fa fa-check"></i>References</a></li>
 <li class="divider"></li>
@@ -148,6 +149,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
             <section class="normal" id="section-">
 <div id="perfil-dos-condenados" class="section level1">
 <h1><span class="header-section-number">Chapter 4</span> Perfil dos condenados</h1>
+<p>No capítulo anterior, mostramos como a base de dados foi baixada e o conteúdo da base após a fase de arrumação de dados. Neste capítulo, apresentaremos análises preliminares sobre duas quantidades de interesse na pesquisa: i) perfil dos condenados do CNC e ii) valores envolvidos nos processos (desagregado por divesos critérios).</p>
 <p>A Tabela <a href="perfil-dos-condenados.html#tab:pfpj">4.1</a> mostra a quantidade de pessoas e processos por tipo de pessoa. Podemos observar que é bem maior a quantidade de pessoas físicas na base.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">tidy_cnc %&gt;%<span class="st"> </span>
 <span class="st">  </span><span class="kw">mutate</span>(<span class="dt">tipo_pessoa =</span> <span class="kw">if_else</span>(tipo_pessoa ==<span class="st"> &#39;F&#39;</span>, <span class="st">&#39;Física&#39;</span>, <span class="st">&#39;Jurídica&#39;</span>)) %&gt;%<span class="st"> </span>
@@ -185,8 +187,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 </tbody>
 </table>
 <p>Agora vamos estudar a distribuição geográfica das pessoas. A Figura <a href="perfil-dos-condenados.html#fig:mapa1">4.1</a> mostra o volume de pessoas por estado. Obsevamos uma concentração maior em São Paulo, Minas Gerais e nos estados da região sul, além de Rondônia. Exceto por Rondônia, o resultado é esperado, já que grande parte da população fica nos estados citados.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">data</span>(br_uf_map, <span class="dt">package =</span> <span class="st">&#39;abjutils&#39;</span>)
-p &lt;-<span class="st"> </span>tidy_cnc %&gt;%<span class="st"> </span>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">p &lt;-<span class="st"> </span>tidy_cnc %&gt;%<span class="st"> </span>
 <span class="st">  </span><span class="kw">distinct</span>(id_pessoa, <span class="dt">.keep_all =</span> <span class="ot">TRUE</span>) %&gt;%<span class="st"> </span>
 <span class="st">  </span><span class="kw">count</span>(<span class="dt">id =</span> uf) %&gt;%<span class="st"> </span>
 <span class="st">  </span><span class="kw">mutate</span>(<span class="dt">n =</span> <span class="kw">cut</span>(n, <span class="kw">c</span>(<span class="dv">0</span>, <span class="dv">100</span>, <span class="dv">200</span>, <span class="dv">300</span>, <span class="dv">800</span>, <span class="kw">max</span>(n)), <span class="dt">dig.lab=</span><span class="dv">5</span>)) %&gt;%<span class="st"> </span>
@@ -207,14 +208,7 @@ Figure 4.1: Volume de pessoas por Unidade Federativa.
 </p>
 </div>
 <p>A Figura <a href="perfil-dos-condenados.html#fig:mapa2">4.2</a> mostra a taxa de pessoas por cem mil habitantes em cada estado. O resultado é surpreendente. Destacam-se o estados do Acre e Rondônia, concentrando 17 e 24 pessoas por cem mil habitantes, respectivamente. Outros estados com alta taxa são Roraima, Amapá, Tocantins, Rio Grande do Norte, Sergipe, Espírito Santo, Distrito Federal e Santa Catarina.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">data</span>(pnud_uf, <span class="dt">package =</span> <span class="st">&#39;abjutils&#39;</span>)
-<span class="kw">data</span>(cadmun, <span class="dt">package =</span> <span class="st">&#39;abjutils&#39;</span>)
-cadmun %&lt;&gt;%<span class="st"> </span><span class="kw">distinct</span>(cod, uf) %&gt;%<span class="st"> </span><span class="kw">mutate_all</span>(as.character)
-pnud_uf %&lt;&gt;%<span class="st"> </span><span class="kw">filter</span>(ano ==<span class="st"> </span><span class="dv">2010</span>) %&gt;%<span class="st"> </span><span class="kw">select</span>(uf, popt) %&gt;%<span class="st"> </span>
-<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">uf =</span> <span class="kw">as.character</span>(uf)) %&gt;%<span class="st"> </span>
-<span class="st">  </span><span class="kw">inner_join</span>(cadmun, <span class="kw">c</span>(<span class="st">&#39;uf&#39;</span> =<span class="st"> &#39;cod&#39;</span>)) %&gt;%<span class="st"> </span>
-<span class="st">  </span><span class="kw">select</span>(<span class="dt">id =</span> uf.y, popt)
-p &lt;-<span class="st"> </span>tidy_cnc %&gt;%<span class="st"> </span>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">p &lt;-<span class="st"> </span>tidy_cnc %&gt;%<span class="st"> </span>
 <span class="st">  </span><span class="kw">distinct</span>(id_pessoa, <span class="dt">.keep_all =</span> <span class="ot">TRUE</span>) %&gt;%<span class="st"> </span>
 <span class="st">  </span><span class="kw">count</span>(<span class="dt">id =</span> uf) %&gt;%<span class="st"> </span>
 <span class="st">  </span><span class="kw">inner_join</span>(pnud_uf, <span class="st">&#39;id&#39;</span>) %&gt;%
@@ -237,6 +231,7 @@ p</code></pre></div>
 Figure 4.2: Pessoas por cem mil habitantes em cada Unidade Federativa.
 </p>
 </div>
+
 </div>
             </section>
 

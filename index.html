@@ -8,7 +8,7 @@
   <title>Cadastro Nacional de Condenações Cíveis por Ato de Improbidade Administrativa e Inelegibilidade</title>
   <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
   <meta name="description" content="Análise do Cadastro Nacional de Condenações Cíveis por Ato de Improbidade Administrativa e Inelegibilidade.">
-  <meta name="generator" content="bookdown 0.3.5 and GitBook 2.6.7">
+  <meta name="generator" content="bookdown 0.3.7 and GitBook 2.6.7">
 
   <meta property="og:title" content="Cadastro Nacional de Condenações Cíveis por Ato de Improbidade Administrativa e Inelegibilidade" />
   <meta property="og:type" content="book" />
@@ -26,7 +26,7 @@
 <meta name="author" content="Associação Brasileira de Jurimetria">
 
 
-<meta name="date" content="2016-12-19">
+<meta name="date" content="2017-01-16">
 
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -124,6 +124,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <li class="chapter" data-level="4" data-path="perfil-dos-condenados.html"><a href="perfil-dos-condenados.html"><i class="fa fa-check"></i><b>4</b> Perfil dos condenados</a></li>
 <li class="chapter" data-level="5" data-path="valores-envolvidos.html"><a href="valores-envolvidos.html"><i class="fa fa-check"></i><b>5</b> Valores envolvidos</a><ul>
 <li class="chapter" data-level="5.1" data-path="valores-envolvidos.html"><a href="valores-envolvidos.html#pagamento-de-multas"><i class="fa fa-check"></i><b>5.1</b> Pagamento de multas</a></li>
+<li class="chapter" data-level="5.2" data-path="valores-envolvidos.html"><a href="valores-envolvidos.html#ressarcimentos"><i class="fa fa-check"></i><b>5.2</b> Ressarcimentos</a></li>
 </ul></li>
 <li class="chapter" data-level="" data-path="references.html"><a href="references.html"><i class="fa fa-check"></i>References</a></li>
 <li class="divider"></li>
@@ -149,11 +150,11 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <div id="header">
 <h1 class="title">Cadastro Nacional de Condenações Cíveis por Ato de Improbidade Administrativa e Inelegibilidade</h1>
 <h4 class="author"><em>Associação Brasileira de Jurimetria</em></h4>
-<h4 class="date"><em>2016-12-19</em></h4>
+<h4 class="date"><em>2017-01-16</em></h4>
 </div>
 <div id="preambulo" class="section level1">
 <h1><span class="header-section-number">Chapter 1</span> Preâmbulo</h1>
-<p>Este é um relatório escrito em <strong>Markdown</strong> descrevendo um estudo realizado para a corregedoria do Tribunal de Justiça de São Paulo. O estudo em questão teve a finalidade de auxiliar a tomada de decisão na criação das varas especializadas em direito comercial na Comarca de São Paulo.</p>
+<p>Este é um relatório escrito em <strong>Markdown</strong> descrevendo um estudo realizado pela Associação Brasileira de Jurimetria (ABJ) para o Instituto Não Aceito Corrupção. O estudo em questão teve a finalidade de compreender o crime de improbidade admnistrativa analisando os admnistradores públicos que constam no Cadastro Nacional de Condenações Cíveis por Ato de Improbidade Administrativa e Inelegibilidade (CNC) do Conselho Nacional de Justiça (CNJ).</p>
 <p>Para compilar este relatório, você precisará da versão de desenvolvimento do pacote bookdown disponível no Github do rstudio:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">devtools::<span class="kw">install_github</span>(<span class="st">&quot;rstudio/bookdown&quot;</span>)</code></pre></div>
 <p>Cada arquivo Rmd contém um e apenas um capítulo, e cada capítulo é definido pelo primeiro nível de cabeçalho #.</p>
@@ -171,16 +172,16 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 ## 8  data-raw/pags/pag_00057.html      3 data-raw/pessoas_pjs/10007.html
 ## 9  data-raw/pags/pag_02307.html     10 data-raw/pessoas_pjs/10008.html
 ## 10 data-raw/pags/pag_01290.html      9 data-raw/pessoas_pjs/10009.html
-## # ... with 35,967 more rows, and 54 more variables: id_condenacao &lt;chr&gt;,
-## #   id_processo &lt;chr&gt;, id_pessoa &lt;chr&gt;, tipo_pena &lt;chr&gt;, dt_pena &lt;date&gt;,
-## #   assunto_cod_1 &lt;chr&gt;, assunto_cod_2 &lt;chr&gt;, assunto_cod_3 &lt;chr&gt;,
-## #   assunto_cod_4 &lt;chr&gt;, assunto_cod_5 &lt;chr&gt;, assunto_nm_1 &lt;chr&gt;,
+## # ... with 35,967 more rows, and 54 more variables: id_condenacao &lt;int&gt;,
+## #   id_processo &lt;int&gt;, id_pessoa &lt;int&gt;, tipo_pena &lt;chr&gt;, dt_pena &lt;date&gt;,
+## #   assunto_cod_1 &lt;int&gt;, assunto_cod_2 &lt;int&gt;, assunto_cod_3 &lt;int&gt;,
+## #   assunto_cod_4 &lt;int&gt;, assunto_cod_5 &lt;int&gt;, assunto_nm_1 &lt;chr&gt;,
 ## #   assunto_nm_2 &lt;chr&gt;, assunto_nm_3 &lt;chr&gt;, assunto_nm_4 &lt;chr&gt;,
 ## #   assunto_nm_5 &lt;chr&gt;, teve_inelegivel &lt;chr&gt;, teve_multa &lt;chr&gt;,
 ## #   teve_pena &lt;chr&gt;, teve_perda_bens &lt;chr&gt;, teve_perda_cargo &lt;chr&gt;,
 ## #   teve_proibicao &lt;chr&gt;, teve_ressarcimento &lt;chr&gt;, teve_suspensao &lt;chr&gt;,
 ## #   vl_multa &lt;dbl&gt;, vl_perda_bens &lt;dbl&gt;, vl_ressarcimento &lt;dbl&gt;,
-## #   duracao_pena &lt;dbl&gt;, duracao_proibicao &lt;dbl&gt;, duracao_suspensao &lt;dbl&gt;,
+## #   duracao_pena &lt;int&gt;, duracao_proibicao &lt;chr&gt;, duracao_suspensao &lt;chr&gt;,
 ## #   de_pena &lt;date&gt;, de_proibicao &lt;date&gt;, de_suspensao &lt;date&gt;,
 ## #   ate_pena &lt;date&gt;, ate_proibicao &lt;date&gt;, ate_suspensao &lt;date&gt;,
 ## #   arq_pessoa &lt;chr&gt;, tipo_pessoa &lt;chr&gt;, nm_pessoa &lt;chr&gt;, sexo &lt;chr&gt;,

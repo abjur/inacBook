@@ -8,7 +8,7 @@
   <title>Cadastro Nacional de Condenações Cíveis por Ato de Improbidade Administrativa e Inelegibilidade</title>
   <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
   <meta name="description" content="Análise do Cadastro Nacional de Condenações Cíveis por Ato de Improbidade Administrativa e Inelegibilidade.">
-  <meta name="generator" content="bookdown 0.3.5 and GitBook 2.6.7">
+  <meta name="generator" content="bookdown 0.3.7 and GitBook 2.6.7">
 
   <meta property="og:title" content="Cadastro Nacional de Condenações Cíveis por Ato de Improbidade Administrativa e Inelegibilidade" />
   <meta property="og:type" content="book" />
@@ -26,7 +26,7 @@
 <meta name="author" content="Associação Brasileira de Jurimetria">
 
 
-<meta name="date" content="2016-12-19">
+<meta name="date" content="2017-01-16">
 
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -124,6 +124,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <li class="chapter" data-level="4" data-path="perfil-dos-condenados.html"><a href="perfil-dos-condenados.html"><i class="fa fa-check"></i><b>4</b> Perfil dos condenados</a></li>
 <li class="chapter" data-level="5" data-path="valores-envolvidos.html"><a href="valores-envolvidos.html"><i class="fa fa-check"></i><b>5</b> Valores envolvidos</a><ul>
 <li class="chapter" data-level="5.1" data-path="valores-envolvidos.html"><a href="valores-envolvidos.html#pagamento-de-multas"><i class="fa fa-check"></i><b>5.1</b> Pagamento de multas</a></li>
+<li class="chapter" data-level="5.2" data-path="valores-envolvidos.html"><a href="valores-envolvidos.html#ressarcimentos"><i class="fa fa-check"></i><b>5.2</b> Ressarcimentos</a></li>
 </ul></li>
 <li class="chapter" data-level="" data-path="references.html"><a href="references.html"><i class="fa fa-check"></i>References</a></li>
 <li class="divider"></li>
@@ -157,15 +158,15 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <p>A primeira base baixada são as paginações da pesquisa. Observe <a href="http://www.cnj.jus.br/improbidade_adm/consultar_requerido.php?validar=form&amp;rs=pesquisarRequeridoGetTabela&amp;rst=&amp;rsrnd=0&amp;rsargs%5B%5D=&amp;rsargs%5B%5D=&amp;rsargs%5B%5D=&amp;rsargs%5B%5D=&amp;rsargs%5B%5D=&amp;rsargs%5B%5D=&amp;rsargs%5B%5D=I&amp;rsargs%5B%5D=0&amp;rsargs%5B%5D=POSICAO_INICIAL_PAGINACAO_PHP1&amp;rsargs%5B%5D=QUANTIDADE_REGISTROS_PAGINACAO15">este link</a> para verificar o conteúdo de uma página. O resultado final dessa extração é uma base de dados em que cada linha é um resultado da busca indicando uma combinação de “pessoa” e “processo”, e com as seguintes colunas:</p>
 <ul>
 <li><code>arq</code>: nome do arquivo baixado, que representa uma página da pesquisa.</li>
-<li><code>id_pag</code>: id da condenação (1 a 15 condenações), que repete por página.</li>
-<li><code>id_condenacao</code>: id da condenação (são os números no final de <code>link_condenacao</code>).</li>
-<li><code>id_processo</code>: id do processo (são os números no final de <code>link_processo</code>).</li>
+<li><code>id_pag</code>: id da condenação (1 a 15 condenações), que se repete por página.</li>
+<li><code>id_condenacao</code>: id da condenação (são os números finais de <code>link_condenacao</code>).</li>
+<li><code>id_processo</code>: id do processo (são os números finais de <code>link_processo</code>).</li>
 <li><code>lab_pessoa</code>: nome da pessoa (ou empresa) envolvida na condenação.</li>
 <li><code>lab_processo</code>: número do processo.</li>
 <li><code>link_condenacao</code>: link para acesso a mais informações da condenação.</li>
 <li><code>link_processo</code>: link para acesso a mais informações do processo.</li>
 </ul>
-<p>A base de páginas será incorporada na base de condenações descrita a seguir.</p>
+<p>A base de páginas será incorporada à base de condenações descrita a seguir.</p>
 </div>
 <div id="dados-sobre-condenacoes" class="section level3">
 <h3><span class="header-section-number">3.1.2</span> Dados sobre condenações</h3>
@@ -297,8 +298,6 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <h2><span class="header-section-number">3.5</span> Próximos passos</h2>
 <p>Com a base de dados baixada e arrumada, passaremos a realizar diversas análises no cadastro de condenados. As análises abordarão sobre valores envolvidos, pessoas condenadas e características dos processos.</p>
 
-<p>No relatório preliminar 01, mostramos como a base de dados foi baixada e o conteúdo da base depois após a fase de arrumação de dados. Neste documento, apresentaremos análises preliminares sobre duas quantidades de interesse na pesquisa: i) perfil dos condenados do CNC e ii) valores envolvidos nos processos (desagregado por divesos critérios).</p>
-<p></p>
 </div>
 </div>
             </section>

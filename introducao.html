@@ -8,7 +8,7 @@
   <title>Cadastro Nacional de Condenações Cíveis por Ato de Improbidade Administrativa e Inelegibilidade</title>
   <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
   <meta name="description" content="Análise do Cadastro Nacional de Condenações Cíveis por Ato de Improbidade Administrativa e Inelegibilidade.">
-  <meta name="generator" content="bookdown 0.3.5 and GitBook 2.6.7">
+  <meta name="generator" content="bookdown 0.3.7 and GitBook 2.6.7">
 
   <meta property="og:title" content="Cadastro Nacional de Condenações Cíveis por Ato de Improbidade Administrativa e Inelegibilidade" />
   <meta property="og:type" content="book" />
@@ -26,7 +26,7 @@
 <meta name="author" content="Associação Brasileira de Jurimetria">
 
 
-<meta name="date" content="2016-12-19">
+<meta name="date" content="2017-01-16">
 
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -124,6 +124,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <li class="chapter" data-level="4" data-path="perfil-dos-condenados.html"><a href="perfil-dos-condenados.html"><i class="fa fa-check"></i><b>4</b> Perfil dos condenados</a></li>
 <li class="chapter" data-level="5" data-path="valores-envolvidos.html"><a href="valores-envolvidos.html"><i class="fa fa-check"></i><b>5</b> Valores envolvidos</a><ul>
 <li class="chapter" data-level="5.1" data-path="valores-envolvidos.html"><a href="valores-envolvidos.html#pagamento-de-multas"><i class="fa fa-check"></i><b>5.1</b> Pagamento de multas</a></li>
+<li class="chapter" data-level="5.2" data-path="valores-envolvidos.html"><a href="valores-envolvidos.html#ressarcimentos"><i class="fa fa-check"></i><b>5.2</b> Ressarcimentos</a></li>
 </ul></li>
 <li class="chapter" data-level="" data-path="references.html"><a href="references.html"><i class="fa fa-check"></i>References</a></li>
 <li class="divider"></li>
@@ -148,10 +149,11 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
             <section class="normal" id="section-">
 <div id="introducao" class="section level1">
 <h1><span class="header-section-number">Chapter 2</span> Introdução</h1>
-<p>O Cadastro Nacional de Condenações Cíveis por Ato de Improbidade Administrativa e Inelegibilidade (CNC) é uma base de dados controlada pelo Conselho Nacional de Justica (CNJ). A partir dessa ferramenta, é possível consultar nomes de empresas ou pessoas físicas e acessar informações sobre os processos.</p>
-<p>O problema é que, infelizmente, o acesso à base do CNC é limitado. Com o uso de captchas e consultas individuais, não é possível obter automaticamente uma lista de todos os processos de improbidade contidos na base, o que impede o cálculo de estatísticas básicas sobre o problema e o devido acompanhamento dos processos.</p>
+<p>O Cadastro Nacional de Condenações Cíveis por Ato de Improbidade Administrativa e Inelegibilidade <a href="http://www.cnj.jus.br/sistemas/certidoes/20650-cadastro-nacional-de-condenacoes-civeis-por-ato-de-improbidade-administrativa-cnia">(CNIA)</a> é uma base de dados controlada pelo Conselho Nacional de Justica (CNJ). A partir dessa ferramenta, é possível consultar os atos da Administraçao que causaram danos morais ou materiais ao Estado, através do registro de pessoas públicas júridicas ou físicas que foram condenadas judicialmente.</p>
+<p>O problema é que, infelizmente, o acesso à base do CNC é limitado. Como o site faz uso de captchas em consultas individuais, não é possível obter automaticamente uma lista de todos os processos de improbidade contidos na base, o que impede o cálculo de estatísticas básicas sobre o problema e o devido acompanhamento dos processos.</p>
 <p>O presente trabalho tem como objetivo principal solucionar este problema. A partir da construção dos programas para extração de dados, serão levantadas estatísticas básicas sobre os processos contidos no CNC, o que possibilitará maior conhecimento sobre as ações de improbidade administrativa no Brasil.</p>
-<p>Nesta fase inicial, realizamos o download e arrumação dos dados. A metodologia para extração foi descrita próxima Seção. Todos os códigos utilizados para extração dos dados são públicos e podem ser acessados <a href="https://github.com/abjur/cnc">neste link</a>.</p>
+<p>Na fase inicial, realizamos o download e arrumação dos dados. A metodologia para extração será descrita na próxima Seção. Todos os códigos utilizados para extração dos dados são públicos e podem ser acessados <a href="https://github.com/abjur/cnc">neste link</a>.</p>
+
 </div>
             </section>
 
