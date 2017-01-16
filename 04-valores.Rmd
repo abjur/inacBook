@@ -26,7 +26,7 @@ tidy_cnc %>%
 
 O gráfico \@ref(fig:graf1) mostra que existem alguns tipos de processos em que a aplicação de multas é mais frequente. Em processos criminais, por exemplo, as multas são muito mais raras do que em processos cíveis. Dentre esses, inclusive, os processos de Danos ao Erário e Enriquecimento Ilícito destacam-se, com aproximadamente 75% das sentenças prevendo o pagamento de multas.
 
-```{r graf1, fig.cap = 'graf1', echo = F}
+```{r graf1, fig.cap = 'graf1', echo = F, warning=F, message=F}
 
 p <- tidy_cnc %>% 
   replace_na(list(teve_multa = 'nao')) %>% 
@@ -132,9 +132,9 @@ tidy_cnc %>%
                caption = 'Condenações com multas de maior valor com informação do tipo de pessoa e proporção acumulada da soma dos valores.')
 ```
 
-Agora vamos analisar a distribuição geográfica da condenação ao pagamento de multas. A Figura \ref{fig:mapa_multa_abs} mostra o total pago em multas em cada estado, em valores absolutos. Como esperado, o estado de São Paulo é o mais abundante em multas, onde R$`r total_de_multas_sp` foram cobrados. Mais do que isso, a Figura \ref{fig:mapa_multa_relativo, echo = F} complementa essa conclusão mostrando que mesmo comparando os totais de multas dividos pela população dos estados, São Paulo é muito maior do que os demais.
+Agora vamos analisar a distribuição geográfica da condenação ao pagamento de multas. A Figura \@ref(fig:mapa_multa_abs) mostra o total pago em multas em cada estado, em valores absolutos. Como esperado, o estado de São Paulo é o mais abundante em multas, onde R$`r total_de_multas_sp` foram cobrados. Mais do que isso, a Figura \@ref(fig:mapa_multa_relativo) complementa essa conclusão mostrando que mesmo comparando os totais de multas dividos pela população dos estados, São Paulo é muito maior do que os demais.
 
-```{r mapa_multa_abs}
+```{r mapa_multa_abs, fig.cap="mapa_multa_abs", warning=F,comment=F}
 
 N <- 12
 
@@ -168,7 +168,7 @@ scale_fill_brewer(palette = 'PuRd', breaks = brks, labels = lbs,
 
 ``` 
 
-```{r mapa_multa_relativo}
+```{r mapa_multa_relativo, fig.cap = "mapa_multa_relativo", warning=F, comment=F}
 
  p <- tidy_cnc %>%
     filter(teve_multa == 'sim') %>%
@@ -203,7 +203,7 @@ tidy_cnc %>%
                caption = 'Proporção de ressarcimentos na base.')
 ```
 
-```{r graf2, fig.cap = 'graf2', echo = F}
+```{r graf2, fig.cap = 'graf2', warning=F, comment=F}
 
 p <- tidy_cnc %>% 
   replace_na(list(teve_ressarcimento = 'nao')) %>% 
@@ -235,13 +235,13 @@ p <- tidy_cnc %>%
 p
 ```
 
-Com relação à disposição geográfica, por outro lado, a Figura \ref{fig:ress_abs} mostra que a distribuição dos ressarcimentos é menos desigual do que a distribuição das multas. Além disso, exceto por São Paulo, a figura também mostra que os valores ressarcidos são menores do que as respectivas multas.
+Com relação à disposição geográfica, por outro lado, a Figura \@ref(fig:ress.abs) mostra que a distribuição dos ressarcimentos é menos desigual do que a distribuição das multas. Além disso, exceto por São Paulo, a figura também mostra que os valores ressarcidos são menores do que as respectivas multas.
 
-A Figura \ref{fig:ress_rel} mostra que os estados com maior quantidade de ressarcimento per capita são os estados de São Paulo, Acre, Rondônia, Distrito Federal, Maranhão e Paraíba.
+A Figura \@ref(fig:ress.rel) mostra que os estados com maior quantidade de ressarcimento per capita são os estados de São Paulo, Acre, Rondônia, Distrito Federal, Maranhão e Paraíba.
 
-```{r ress_abs, echo = F}
+```{r ress.abs, fig.cap = 'ress.abs', warning=F, comment=F, message=F}
 
- p <- tidy_cnc %>%
+tidy_cnc %>%
     filter(teve_ressarcimento == 'sim') %>%
     mutate(id = uf) %>%
     group_by(id) %>%
@@ -254,13 +254,12 @@ A Figura \ref{fig:ress_rel} mostra que os estados com maior quantidade de ressar
         coord_equal() +
         theme_void()
     }
-  p
   
 ```
 
-```{r, ress_rel, echo = F}
+```{r ress.rel, fig.cap = 'ress.rel', warning=F, comment=F, message=F}
 
- p <- tidy_cnc %>%
+tidy_cnc %>%
     filter(teve_ressarcimento == 'sim') %>%
     mutate(id = uf) %>%
     group_by(id) %>%
@@ -276,6 +275,5 @@ A Figura \ref{fig:ress_rel} mostra que os estados com maior quantidade de ressar
         coord_equal() +
         theme_void()
     }
-  p
   
 ```
