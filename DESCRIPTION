@@ -1,7 +1,13 @@
 Package: abjBookTemplate
 Title: Does not matter.
 Version: 0.0.1
-Imports: tidyverse,
+Imports: dplyr,
+    tidyr,
+    lubridate,
+    readxl,
+    readr,
+    ggplot2,
+    purrr,
     stringr,
     janitor,
     bookdown,
