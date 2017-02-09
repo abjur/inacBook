@@ -151,7 +151,7 @@ lbs <- c("NA","<10","10<100","100<1M",
 
  p <- tidy_cnc %>%
     filter(teve_multa == 'sim') %>%
-    mutate(id = uf) %>%
+    mutate(id = uf_processo) %>%
     group_by(id) %>%
     summarise(vl_multa = sum(vl_multa, na.rm = T)) %>%
     mutate(vl_multa = cut(vl_multa, cortes, dig.lab=5)) %>% 
@@ -172,7 +172,7 @@ scale_fill_brewer(palette = 'PuRd', breaks = brks, labels = lbs,
 
  p <- tidy_cnc %>%
     filter(teve_multa == 'sim') %>%
-    mutate(id = uf) %>%
+    mutate(id = uf_processo) %>%
     group_by(id) %>%
     summarise(vl_multa = sum(vl_multa)) %>%
     inner_join(pnud_uf, 'id') %>%
@@ -243,7 +243,7 @@ A Figura \@ref(fig:ress.rel) mostra que os estados com maior quantidade de ressa
 
 tidy_cnc %>%
     filter(teve_ressarcimento == 'sim') %>%
-    mutate(id = uf) %>%
+    mutate(id = uf_processo) %>%
     group_by(id) %>%
     summarise(vl_ressarcimento = sum(vl_ressarcimento)) %>%
     mutate(vl_ressarcimento = cut(vl_ressarcimento, cortes)) %>% 
@@ -261,7 +261,7 @@ tidy_cnc %>%
 
 tidy_cnc %>%
     filter(teve_ressarcimento == 'sim') %>%
-    mutate(id = uf) %>%
+    mutate(id = uf_processo) %>%
     group_by(id) %>%
     summarise(vl_ressarcimento = sum(vl_ressarcimento)) %>%
     inner_join(pnud_uf, 'id') %>%
