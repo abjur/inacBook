@@ -8,7 +8,7 @@ A base de condenações foi obtida em dois passos: primeiro baixamos as páginas
 
 ### Páginas de busca
 
-A primeira base baixada são as paginações da pesquisa. Observe [este link](http://www.cnj.jus.br/improbidade_adm/consultar_requerido.php?validar=form&rs=pesquisarRequeridoGetTabela&rst=&rsrnd=0&rsargs[]=&rsargs[]=&rsargs[]=&rsargs[]=&rsargs[]=&rsargs[]=&rsargs[]=I&rsargs[]=0&rsargs[]=POSICAO_INICIAL_PAGINACAO_PHP1&rsargs[]=QUANTIDADE_REGISTROS_PAGINACAO15) para verificar o conteúdo de uma página. O resultado final dessa extração é uma base de dados em que cada linha é um resultado da busca indicando uma combinação de "pessoa" e "processo", e com as seguintes colunas:
+A primeira base baixada são as paginações da pesquisa. Acesse [este link](http://www.cnj.jus.br/improbidade_adm/consultar_requerido.php?validar=form&rs=pesquisarRequeridoGetTabela&rst=&rsrnd=0&rsargs[]=&rsargs[]=&rsargs[]=&rsargs[]=&rsargs[]=&rsargs[]=&rsargs[]=I&rsargs[]=0&rsargs[]=POSICAO_INICIAL_PAGINACAO_PHP1&rsargs[]=QUANTIDADE_REGISTROS_PAGINACAO15) para verificar o conteúdo de uma página. O resultado final dessa extração é uma base de dados em que cada linha é um resultado da busca indicando uma combinação de "pessoa" e "processo", e com as seguintes colunas:
 
 - `arq`: nome do arquivo baixado, que representa uma página da pesquisa.
 - `id_pag`: id da condenação (1 a 15 condenações), que se repete por página.
