@@ -31,8 +31,56 @@ library(stringr)
 library(lubridate)
 library(janitor)
 library(cnc)
+library(forcats)
 data(tidy_cnc, package = 'cnc')
 tidy_cnc
 ```
 
+```{r echo=FALSE}
+library(cnc)
+library(abjData)
+data(tidy_cnc, package = 'cnc')
+data(br_uf_map, package = 'abjData')
+data(cadmun, package = 'abjData')
+data(pnud_uf, package = 'abjData')
+
+cadmun %<>% distinct(cod, uf) %>% mutate_all(as.character)
+pnud_uf %<>% filter(ano == 2010) %>% 
+  select(uf, ufn, popt) %>% 
+  mutate(uf = as.character(uf)) %>% 
+  inner_join(cadmun, c('uf' = 'cod')) %>% 
+  select(id = uf.y, ufn, popt)
+
+
+re_uf_estadual <- 'ça d[eo] (Estado d[oae] )?(.+)$'
+re_uf_federal <- pnud_uf %>% 
+  with(ufn) %>% 
+  {sprintf('(%s)|(%s)', ., abjutils::rm_accent(.))} %>% 
+  paste(collapse = '|') %>% 
+  regex(ignore_case = TRUE)
+
+
+ufs_estadual <- tidy_cnc %>% 
+  filter(esfera_processo == 'Estadual') %>% 
+  mutate(ufn_processo = str_match(tribunal, re_uf_estadual)[,3],
+         ufn_processo = str_replace_all(ufn_processo, ' e dos T.+', '')) %>% 
+  inner_join(pnud_uf, c('ufn_processo' = 'ufn')) %>% 
+  select(id_condenacao, uf_processo = id)
+
+ufs_federal_1inst <- tidy_cnc %>% 
+  filter(esfera_processo == 'Federal', instancia == '1 grau') %>% 
+  mutate(ufn_processo = str_match_all(comarca_secao, re_uf_federal) %>% 
+           map_chr(~{
+             x <- as.character(.x[,-1])
+             x[x != ''][1]
+         })) %>% 
+  mutate(ufn_processo = toupper(abjutils::rm_accent(ufn_processo))) %>% 
+  inner_join(mutate(pnud_uf, ufn_processo = toupper(abjutils::rm_accent(ufn))),
+            'ufn_processo') %>% 
+  select(id_condenacao, uf_processo = id)
+
+tidy_cnc %<>% 
+  left_join(bind_rows(ufs_estadual, ufs_federal_1inst), 'id_condenacao') %>% 
+  ungroup()
+```
 
