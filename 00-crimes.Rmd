@@ -1,0 +1,18 @@
+```{r load_tpu}
+
+library(tpur)
+
+
+
+```
+
+
+# Caracterização geral da base
+
+```{r, echo = FALSE}
+tidy
+```
+
+Embora a ferramenta criada pelo CNJ chame-se Cadastro Nacional de Condenações **Cíveis** por Ato de **Improbidade Administrativa** e **Inelegibilidade**, 
+
+
