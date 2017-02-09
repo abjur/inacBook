@@ -147,7 +147,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
             <section class="normal" id="section-">
 <div id="perfil-dos-condenados" class="section level1">
 <h1><span class="header-section-number">Chapter 4</span> Perfil dos condenados</h1>
-<p>No capítulo anterior, mostramos como a base de dados foi baixada e o conteúdo da base após a fase de arrumação de dados. Neste capítulo, apresentaremos análises preliminares sobre duas quantidades de interesse na pesquisa: i) perfil dos condenados do CNC e ii) valores envolvidos nos processos (desagregado por divesos critérios).</p>
+<p>No capítulo anterior, explicamos como a base de dados foi baixada e mostramos o conteúdo da base após a fase de arrumação de dados. Neste capítulo, apresentaremos análises preliminares sobre duas quantidades de interesse na pesquisa: i) perfil dos condenados do CNC e ii) valores envolvidos nos processos (desagregado por divesos critérios).</p>
 <p>A Tabela <a href="perfil-dos-condenados.html#tab:pfpj">4.1</a> mostra a quantidade de pessoas e processos por tipo de pessoa. Podemos observar que é bem maior a quantidade de pessoas físicas na base.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">tidy_cnc %&gt;%<span class="st"> </span>
 <span class="st">  </span><span class="kw">mutate</span>(<span class="dt">tipo_pessoa =</span> <span class="kw">if_else</span>(tipo_pessoa ==<span class="st"> &#39;F&#39;</span>, <span class="st">&#39;Física&#39;</span>, <span class="st">&#39;Jurídica&#39;</span>)) %&gt;%<span class="st"> </span>
@@ -187,7 +187,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <p>Agora vamos estudar a distribuição geográfica das pessoas. A Figura <a href="perfil-dos-condenados.html#fig:mapa1">4.1</a> mostra o volume de pessoas por estado. Obsevamos uma concentração maior em São Paulo, Minas Gerais e nos estados da região sul, além de Rondônia. Exceto por Rondônia, o resultado é esperado, já que grande parte da população fica nos estados citados.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">p &lt;-<span class="st"> </span>tidy_cnc %&gt;%<span class="st"> </span>
 <span class="st">  </span><span class="kw">distinct</span>(id_pessoa, <span class="dt">.keep_all =</span> <span class="ot">TRUE</span>) %&gt;%<span class="st"> </span>
-<span class="st">  </span><span class="kw">count</span>(<span class="dt">id =</span> uf) %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">count</span>(<span class="dt">id =</span> uf_processo) %&gt;%<span class="st"> </span>
 <span class="st">  </span><span class="kw">mutate</span>(<span class="dt">n =</span> <span class="kw">cut</span>(n, <span class="kw">c</span>(<span class="dv">0</span>, <span class="dv">100</span>, <span class="dv">200</span>, <span class="dv">300</span>, <span class="dv">800</span>, <span class="kw">max</span>(n)), <span class="dt">dig.lab=</span><span class="dv">5</span>)) %&gt;%<span class="st"> </span>
 <span class="st">  </span><span class="kw">inner_join</span>(br_uf_map) %&gt;%<span class="st"> </span>{
     <span class="kw">ggplot</span>(.) +
@@ -208,7 +208,7 @@ Figure 4.1: Volume de pessoas por Unidade Federativa.
 <p>A Figura <a href="perfil-dos-condenados.html#fig:mapa2">4.2</a> mostra a taxa de pessoas por cem mil habitantes em cada estado. O resultado é surpreendente. Destacam-se o estados do Acre e Rondônia, concentrando 17 e 24 pessoas por cem mil habitantes, respectivamente. Outros estados com alta taxa são Roraima, Amapá, Tocantins, Rio Grande do Norte, Sergipe, Espírito Santo, Distrito Federal e Santa Catarina.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">p &lt;-<span class="st"> </span>tidy_cnc %&gt;%<span class="st"> </span>
 <span class="st">  </span><span class="kw">distinct</span>(id_pessoa, <span class="dt">.keep_all =</span> <span class="ot">TRUE</span>) %&gt;%<span class="st"> </span>
-<span class="st">  </span><span class="kw">count</span>(<span class="dt">id =</span> uf) %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">count</span>(<span class="dt">id =</span> uf_processo) %&gt;%<span class="st"> </span>
 <span class="st">  </span><span class="kw">inner_join</span>(pnud_uf, <span class="st">&#39;id&#39;</span>) %&gt;%
 <span class="st">  </span><span class="kw">mutate</span>(<span class="dt">tx =</span> n /<span class="st"> </span>popt *<span class="st"> </span><span class="dv">100000</span>) %&gt;%<span class="st"> </span>
 <span class="st">  </span><span class="kw">mutate</span>(<span class="dt">tx =</span> <span class="kw">cut</span>(tx, <span class="kw">c</span>(<span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">3</span>, <span class="dv">5</span>, <span class="dv">10</span>, <span class="kw">max</span>(tx)), <span class="dt">dig.lab =</span> <span class="dv">3</span>,
@@ -225,6 +225,56 @@ Figure 4.1: Volume de pessoas por Unidade Federativa.
 p</code></pre></div>
 <div class="figure" style="text-align: center"><span id="fig:mapa2"></span>
 <img src="inacBook_files/figure-html/mapa2-1.png" alt="Pessoas por cem mil habitantes em cada Unidade Federativa." width="60%" />
+<p class="caption">
+Figure 4.2: Pessoas por cem mil habitantes em cada Unidade Federativa.
+</p>
+</div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">cnc_tx &lt;-<span class="st"> </span>tidy_cnc %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">distinct</span>(id_pessoa, <span class="dt">.keep_all =</span> <span class="ot">TRUE</span>) %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">count</span>(<span class="dt">id =</span> uf_processo) %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">inner_join</span>(pnud_uf, <span class="st">&#39;id&#39;</span>) %&gt;%
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">tx =</span> n /<span class="st"> </span>popt *<span class="st"> </span><span class="dv">100000</span>)
+  
+groups &lt;-<span class="st"> </span>cnc_tx %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">select</span>(id, tx) %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">column_to_rownames</span>(<span class="st">&#39;id&#39;</span>) %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">dist</span>() %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">hclust</span>(<span class="st">&#39;ward.D&#39;</span>) %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">cutree</span>(<span class="dv">4</span>) %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">enframe</span>() %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">set_names</span>(<span class="kw">c</span>(<span class="st">&#39;id&#39;</span>, <span class="st">&#39;grupo&#39;</span>))
+
+<span class="co"># library(cartogram)</span>
+<span class="co"># # http://www.usp.br/nereus/wp-content/uploads/Brasil.zip</span>
+<span class="co"># br_map &lt;- readOGR(&#39;shp&#39;, &#39;UFEBRASIL&#39;, stringsAsFactors = FALSE, </span>
+<span class="co">#                   dropNULLGeometries = TRUE, verbose = TRUE)</span>
+<span class="co"># br_map@data &lt;- br_map@data %&gt;% </span>
+<span class="co">#   mutate(ufn = abjutils::rm_accent(NM_ESTADO)) %&gt;% </span>
+<span class="co">#   inner_join(mutate(pnud_uf, ufn = abjutils::rm_accent(toupper(ufn))), </span>
+<span class="co">#              &#39;ufn&#39;) %&gt;% </span>
+<span class="co">#   inner_join(select(cnc_tx, id, tx), &#39;id&#39;) %&gt;% </span>
+<span class="co">#   filter(id != &#39;DF&#39;)</span>
+<span class="co"># br_map_cart &lt;- cartogram(br_map, &quot;tx&quot;, 3)</span>
+<span class="co"># d_br_map &lt;- fortify(br_map_cart, region = &#39;id&#39;)</span>
+
+p &lt;-<span class="st"> </span>cnc_tx %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">inner_join</span>(groups, <span class="st">&#39;id&#39;</span>) %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">group_by</span>(grupo) %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">tx_lab =</span> <span class="kw">sprintf</span>(<span class="st">&#39;[%.1f, %.1f]&#39;</span>, <span class="kw">min</span>(tx), <span class="kw">max</span>(tx))) %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">ungroup</span>() %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">tx =</span> forcats::<span class="kw">fct_reorder</span>(tx_lab, tx, min)) %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">inner_join</span>(br_uf_map) %&gt;%<span class="st"> </span>{
+    <span class="kw">ggplot</span>(.) +
+<span class="st">      </span><span class="kw">geom_map</span>(<span class="kw">aes</span>(<span class="dt">x =</span> long, <span class="dt">y =</span> lat, <span class="dt">map_id =</span> id, <span class="dt">fill =</span> tx),
+               <span class="dt">colour =</span> <span class="st">&#39;gray30&#39;</span>, <span class="dt">size =</span> .<span class="dv">1</span>, <span class="dt">alpha =</span> .<span class="dv">8</span>,
+               <span class="dt">map =</span> ., <span class="dt">data =</span> .) +
+<span class="st">      </span><span class="kw">scale_fill_brewer</span>(<span class="dt">palette =</span> <span class="st">&#39;PuRd&#39;</span>) +
+<span class="st">      </span><span class="kw">coord_equal</span>() +
+<span class="st">      </span><span class="kw">theme_void</span>()
+  }
+p</code></pre></div>
+<div class="figure" style="text-align: center"><span id="fig:mapa2"></span>
+<img src="inacBook_files/figure-html/mapa2-2.png" alt="Pessoas por cem mil habitantes em cada Unidade Federativa." width="60%" />
 <p class="caption">
 Figure 4.2: Pessoas por cem mil habitantes em cada Unidade Federativa.
 </p>
