@@ -1,0 +1,197 @@
+## Análise preliminar
+
+No capítulo anterior, mostramos como a base de dados foi baixada e o conteúdo da base após a fase de arrumação de dados. Neste capítulo, levantaremos preliminarmente alguns aspectos principais que nortearão as análises posteriores. O objetivo desta análise preliminar é construir uma coleção de fatos relevantes que podem moldar a intepretação dos resultados futuros.
+
+## Condenações Cíveis e condenações Criminais
+
+```{r, echo = F}
+  tidy_cnc %>% 
+    count(assunto_penal_any) %>% 
+    with(n[1]/sum(n))
+```
+
+Por mais que as informações em estudo sejam oriundas do Cadastro Nacional de Condenações **Cíveis** por **Ato de Improbidade Administrativa**, aproximadamente metade das condenações cadastradas foram causadas por infrações previstas no Código Penal (vide as Tabelas \@ref(tab: tab_civeis) e \@ref(tab:tab_pen), que separam as condenações por assunto). Acreditamos que essa incoerência seja resultado de uma intepretação abrangente da descrição da base pelo próprio Conselho Nacional de Justiça, que possibilita o cadastro de ["atos da Administração que causem danos patrimoniais ou morais ao Estado"](http://www.cnj.jus.br/sistemas/certidoes/20650-cadastro-nacional-de-condenacoes-civeis-por-ato-de-improbidade-administrativa-cnia).
+
+```{r tab_civeis}
+
+tidy_cnc %>% 
+  filter(!assunto_penal_any) %>% 
+  count(assunto_nm_1) %>% 
+  arrange(desc(n)) %>% 
+  knitr::kable()
+
+```
+
+```{r tab_pen}
+
+tidy_cnc %>% 
+  filter(assunto_penal_any) %>% 
+  count(assunto_nm_1) %>% 
+  arrange(desc(n)) %>% 
+  knitr::kable()
+
+```
+
+As características dos dois tipos de condenação são bastante diferentes, por isso essa variável é uma indicadora de perfil bastante significativa. Separando as observações em "condenações cíveis" e "condenações criminais", também identificam-se diferenças em outras informações relevantes sobre os processos. Ao longo desta subseção, vamos analisar três aspectos principais:
+
+- Distribuição geográfica
+- Penas aplicadas
+- Tempos processuais
+
+### Distribuição geográfica
+
+A primeira diferença entre os tipos de condenação está na distribuição geográfica. Na distribuição absoluta de condenações (Figura \@ref(fig: condenacoes_abs)), verifica-se que os cadastros de condenações cíveis espalham-se melhor pelo Brasil do que os cadatros de condenações penais. Além disso, os focos de infração apresentam diferenças sutis: embora focos estejam no eixo Sul-Sudeste para os dois tipos de condenação, o Distrito Federal é a unidade da federação com maior quantidade de condenações penais. Isso é diferente do que ocorre nas condenações cíveis, onde Distrito Federal não figura entre os maiores condenadores.
+
+```{r condenacoes_abs}
+
+plot_data <- tidy_cnc %>% 
+    distinct(id_pessoa, .keep_all = TRUE) %>%
+    group_by(assunto_penal_any) %>% 
+    count(id = uf_processo) %>%
+    ungroup %>%
+    replace_na(replace = list(id = 'NA')) %>% 
+    complete(id, assunto_penal_any, fill = list(n = 0)) %>% 
+    mutate(n_cut = cut(n, c(0, 100, 750, 1250, 1500, 2000, 5000, 6500,max(n)), dig.lab=5, include.lowest = T))
+
+n_na <- plot_data %>% 
+  filter(id == "NA") %>% 
+  with(sum(n))
+
+p_abs <- plot_data %>% 
+    filter(id != "NA") %>% 
+    mutate(penal = factor(as.character(assunto_penal_any)),
+           penal = fct_recode(penal, Penal = 'TRUE', `Cível` = 'FALSE')) %>% 
+    inner_join(br_uf_map) %>% {
+      ggplot(.) +
+        geom_map(aes(x = long, y = lat, map_id = id, fill = n_cut),
+               colour = 'gray30', size = .1, alpha = .8,
+               map = ., data = .) +
+        coord_equal() +
+        scale_fill_brewer(palette = 'PuRd', name = str_wrap('Nº de Condenações')) +
+        facet_wrap(~penal) +
+        theme_void()
+      }
+p_abs
+```
+
+Outras diferenças geográficas entre as condenações cíveis e penais podem ser encontradas se analisarmos as taxas relativas de condenação. Considerando a taxa de condenações por cem mil habitantes (\@ref(fig: condenacoes_rel)), conclui-se que a distribuição geográfica dos cadastros de infrações cíveis é pouco centralizado, sendo possível a identificação de dois pplos principais: Acre e Rondônia, no Norte, e Santa Catarina e Rio Grande do Sul, no Sul do País. Analisando o mesmo gráfico, mas levando em conta apenas condenações criminais, concluímos que a centralização do registro desses casos é muito maior, com taxas de cadastro relevantes apenas no Distrito Federal, no Rio Grande do Sul, em Santa Catarina e em Minas Gerais.
+
+```{r, condenacoes_rel}
+
+plot_data <- tidy_cnc %>% 
+    distinct(id_pessoa, .keep_all = TRUE) %>%
+    group_by(assunto_penal_any) %>% 
+    count(id = uf_processo) %>%
+    ungroup %>%
+    replace_na(replace = list(id = 'NA')) %>% 
+    complete(id, assunto_penal_any, fill = list(n = 0)) %>% 
+    left_join(pnud_uf, 'id') %>%
+    ungroup() %>% 
+    mutate(tx = n / popt * 100000) %>% 
+    mutate(tx_cut = cut(tx, c(0, 1, 3, 5, 9, 10, 20, 30, 50, max(tx, na.rm = T)), dig.lab = 5, include.lowest = T))
+
+n_na <- plot_data %>% 
+  filter(id == "NA") %>% 
+  with(sum(n))
+
+p_rel <- plot_data %>% 
+    filter(id != "NA") %>% 
+    mutate(penal = factor(as.character(assunto_penal_any)),
+           penal = fct_recode(penal, Penal = 'TRUE', `Cível` = 'FALSE')) %>%
+    inner_join(br_uf_map) %>% {
+      ggplot(.) +
+        geom_map(aes(x = long, y = lat, map_id = id, fill = tx_cut),
+               colour = 'gray30', size = .1, alpha = .8,
+               map = ., data = .) +
+        coord_equal() +
+        scale_fill_brewer(palette = 'PuRd', name = "Taxa de Condenações\npor 100 mil habitantes") +
+        facet_wrap(~penal) +
+        theme_void()
+  }
+p_rel
+
+```
+
+### Penas
+
+```{r}
+fix_tipo_pena <- function(x){
+  x %>% 
+    str_replace_all("teve_","") %>% 
+  sapply(function(t){
+    switch(t,
+           inelegivel = 'Inelegibilidade',
+           multa = "Multa",
+           pena = "Pena Privativa de Liberdade",
+           perda_bens = "Perda de Bens",
+           perda_cargo = "Perda de Cargo",
+           proibicao = "Probição",
+           ressarcimento = "Ressarcimento",
+           suspensao = "Suspensão de Cargo")
+  })
+}
+
+todas_as_penas <- tidy_cnc %>% 
+  group_by(assunto_penal_any) %>% 
+  select(assunto_penal_any, contains("teve")) %>% 
+  count_(grep('teve', names(.), value = T)) %>% 
+  ungroup() %>% 
+  mutate(id = 1:n()) %>% 
+  gather(tipo_pena, teve, -assunto_penal_any, -id, -n) %>% 
+  replace_na(list(teve = FALSE)) %>% 
+  arrange(id, tipo_pena) %>% 
+  mutate(tipo_pena2 = fix_tipo_pena(tipo_pena),
+         teve = ifelse(teve == "sim", TRUE, FALSE)) %>% 
+  group_by(id) %>% 
+  summarise(pena = paste(tipo_pena2[teve], collapse = ', '),
+            n = n[1], 
+            penal = assunto_penal_any[1]) %>% 
+  select(-id)
+
+```
+
+Outra diferença relevante entre condenações cíveis e criminais está nas punições aplicadas. O CNIA registra 7 tipos de punições distintas, mas algumas dessas são mais frequentemente aplicadas em condenações criminais.
+
+Consultando a lista de conjuntos de punições mais aplicados em condenações criminais, verificamos que as penas Inelegibilidade e Pena Privativa de Liberdade são aplicadas em 72% das condenações criminais.
+
+```{r}
+
+todas_as_penas %>% 
+  filter(penal) %>% 
+  mutate(prop = round(n/sum(n),2)) %>% 
+  arrange(desc(n)) %>% 
+  select(-penal) %>% 
+  mutate(pena = str_wrap(pena, 30))
+
+```
+
+<!-- - Inelegibilidade. -->
+<!-- - Multa. -->
+<!-- - Pena privativa de liberdade. -->
+<!-- - Perda de bens ou valores acrescidos ilicitamente ao patrimônio. -->
+<!-- - Perda de Cargo/Emprego/Função Pública. -->
+<!-- - Ressarcimento integral do Dano. -->
+<!-- - Suspensão dos Direitos Políticos. -->
+<!-- - Proibição de Contratar com o Poder Público ou receber incentivos fiscais ou creditícios, direta ou indiretamente, ainda que por intermédio de pessoa jurídica da qual seja sócio majoritário. -->
+
+
+```{r}
+
+todas_as_penas %>% 
+  filter(!penal) %>% 
+  mutate(prop = round(n/sum(n),2)) %>% 
+  arrange(desc(n)) %>% 
+  select(-penal) %>% 
+  mutate(pena = str_wrap(pena, 30))
+
+```
+
+
+```{r}
+
+tidy_cnc %>%  
+  with(table(assunto_penal_all, tipo_pena)) %>% 
+  prop.table(margin = 1)
+
+```
+
