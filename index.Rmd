@@ -30,14 +30,10 @@ library(stringr)
 library(lubridate)
 library(janitor)
 library(cnc)
-<<<<<<< HEAD
 library(tpur)
 library(magrittr)
 library(tidyverse)
-
-=======
 library(forcats)
->>>>>>> 925375d3833ae876e1348c9080bb51e4b006cd5f
 data(tidy_cnc, package = 'cnc')
 
 tabela_assuntos <- download_table("assunto","estadual","primeiro grau") %>% 
@@ -45,7 +41,7 @@ tabela_assuntos <- download_table("assunto","estadual","primeiro grau") %>%
 
 assuntos_penais <- tabela_assuntos %>%
   filter(str_detect(n1, regex("penal", ignore_case = T))) %>% 
-  select(contains("n")) %>% 
+  select(dplyr::contains("n")) %>% 
   gather(nivel, assunto) %>% 
   distinct(assunto, .keep_all = T) %>% 
   with(assunto)
