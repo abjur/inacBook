@@ -26,13 +26,45 @@ Cada arquivo Rmd contém um e apenas um capítulo, e cada capítulo é definido 
 Para compilar este documento em PDF, você precisará utilizar XeLaTeX.
 
 ```{r echo=FALSE, warning=FALSE, message=FALSE}
-library(tidyverse)
 library(stringr)
 library(lubridate)
 library(janitor)
 library(cnc)
+library(tpur)
+library(magrittr)
+library(tidyverse)
+
 data(tidy_cnc, package = 'cnc')
-tidy_cnc
+
+tabela_assuntos <- download_table("assunto","estadual","primeiro grau") %>% 
+  build_table()
+
+assuntos_penais <- tabela_assuntos %>%
+  filter(str_detect(n1, regex("penal", ignore_case = T))) %>% 
+  select(contains("n")) %>% 
+  gather(nivel, assunto) %>% 
+  distinct(assunto, .keep_all = T) %>% 
+  with(assunto)
+
+assuntos <- tidy_cnc %>% 
+  select(dplyr::contains("assunto_nm")) %>% 
+  mutate(id = 1:n()) %>% 
+  gather(rank, assunto, -id) %>% 
+  filter(!is.na(assunto)) %>% 
+  mutate(penal_lgl = assunto %in% assuntos_penais)
+
+assuntos_penal_any <- assuntos %>% 
+  group_by(id) %>% 
+  summarise(assunto_penal_any = any(penal_lgl))
+
+assuntos_penal_all <- assuntos %>% 
+  group_by(id) %>% 
+  summarise(assunto_penal_all = all(penal_lgl))
+  
+tidy_cnc %<>%
+  mutate(id = 1:n()) %>% 
+  left_join(assuntos_penal_all) %>% 
+  left_join(assuntos_penal_any)
 ```
 
 
