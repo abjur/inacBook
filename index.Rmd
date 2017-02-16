@@ -30,10 +30,14 @@ library(stringr)
 library(lubridate)
 library(janitor)
 library(cnc)
+<<<<<<< HEAD
 library(tpur)
 library(magrittr)
 library(tidyverse)
 
+=======
+library(forcats)
+>>>>>>> 925375d3833ae876e1348c9080bb51e4b006cd5f
 data(tidy_cnc, package = 'cnc')
 
 tabela_assuntos <- download_table("assunto","estadual","primeiro grau") %>% 
@@ -67,4 +71,19 @@ tidy_cnc %<>%
   left_join(assuntos_penal_any)
 ```
 
+```{r echo=FALSE}
+library(cnc)
+library(abjData)
+data(tidy_cnc, package = 'cnc')
+data(br_uf_map, package = 'abjData')
+data(cadmun, package = 'abjData')
+data(pnud_uf, package = 'abjData')
+
+cadmun %<>% distinct(cod, uf) %>% mutate_all(as.character)
+pnud_uf %<>% filter(ano == 2010) %>% 
+  select(uf, ufn, popt) %>% 
+  mutate(uf = as.character(uf)) %>% 
+  inner_join(cadmun, c('uf' = 'cod')) %>% 
+  select(id = uf.y, ufn, popt)
+```
 

@@ -14,8 +14,10 @@ Imports: dplyr,
     cnc,
     abjData,
     abjutils,
-    plotly
+    plotly,
+    tpur
 Remotes:
     rstudio/bookdown,
     abjur/cnc,
-    abjur/abjData
+    abjur/abjData,
+    abjur/tpur

@@ -1,21 +1,6 @@
-```{r echo=FALSE}
-library(cnc)
-library(abjData)
-data(tidy_cnc, package = 'cnc')
-data(br_uf_map, package = 'abjData')
-data(cadmun, package = 'abjData')
-data(pnud_uf, package = 'abjData')
-
-cadmun %<>% distinct(cod, uf) %>% mutate_all(as.character)
-pnud_uf %<>% filter(ano == 2010) %>% select(uf, popt) %>% 
-  mutate(uf = as.character(uf)) %>% 
-  inner_join(cadmun, c('uf' = 'cod')) %>% 
-  select(id = uf.y, popt)
-```
-
 # Perfil dos condenados
 
-No capítulo anterior, mostramos como a base de dados foi baixada e o conteúdo da base após a fase de arrumação de dados. Neste capítulo, apresentaremos análises preliminares sobre duas quantidades de interesse na pesquisa: i) perfil dos condenados do CNC e ii) valores envolvidos nos processos (desagregado por divesos critérios). 
+No capítulo anterior, explicamos como a base de dados foi baixada e mostramos o conteúdo da base após a fase de arrumação de dados. Neste capítulo, apresentaremos análises preliminares sobre duas quantidades de interesse na pesquisa: i) perfil dos condenados do CNC e ii) valores envolvidos nos processos (desagregado por divesos critérios). 
 
 A Tabela \@ref(tab:pfpj) mostra a quantidade de pessoas e processos por tipo de pessoa. Podemos observar que é bem maior a quantidade de pessoas físicas na base.
 
@@ -35,7 +20,7 @@ Agora vamos estudar a distribuição geográfica das pessoas. A Figura \@ref(fig
 ```{r mapa1, warning=FALSE, message=FALSE, fig.cap = 'Volume de pessoas por Unidade Federativa.', out.width="60%", fig.align='center'}
 p <- tidy_cnc %>% 
   distinct(id_pessoa, .keep_all = TRUE) %>% 
-  count(id = uf) %>% 
+  count(id = uf_processo) %>% 
   mutate(n = cut(n, c(0, 100, 200, 300, 800, max(n)), dig.lab=5)) %>% 
   inner_join(br_uf_map) %>% {
     ggplot(.) +
@@ -54,7 +39,7 @@ A Figura \@ref(fig:mapa2) mostra a taxa de pessoas por cem mil habitantes em cad
 ```{r mapa2, warning=FALSE, message=FALSE, fig.cap = 'Pessoas por cem mil habitantes em cada Unidade Federativa.', out.width="60%", fig.align='center'}
 p <- tidy_cnc %>% 
   distinct(id_pessoa, .keep_all = TRUE) %>% 
-  count(id = uf) %>% 
+  count(id = uf_processo) %>% 
   inner_join(pnud_uf, 'id') %>%
   mutate(tx = n / popt * 100000) %>% 
   mutate(tx = cut(tx, c(0, 1, 3, 5, 10, max(tx)), dig.lab = 3,
@@ -69,4 +54,50 @@ p <- tidy_cnc %>%
       theme_void()
   }
 p
+
+cnc_tx <- tidy_cnc %>% 
+  distinct(id_pessoa, .keep_all = TRUE) %>% 
+  count(id = uf_processo) %>% 
+  inner_join(pnud_uf, 'id') %>%
+  mutate(tx = n / popt * 100000)
+  
+groups <- cnc_tx %>% 
+  select(id, tx) %>% 
+  column_to_rownames('id') %>% 
+  dist() %>% 
+  hclust('ward.D') %>% 
+  cutree(4) %>% 
+  enframe() %>% 
+  set_names(c('id', 'grupo'))
+
+# library(cartogram)
+# # http://www.usp.br/nereus/wp-content/uploads/Brasil.zip
+# br_map <- readOGR('shp', 'UFEBRASIL', stringsAsFactors = FALSE, 
+#                   dropNULLGeometries = TRUE, verbose = TRUE)
+# br_map@data <- br_map@data %>% 
+#   mutate(ufn = abjutils::rm_accent(NM_ESTADO)) %>% 
+#   inner_join(mutate(pnud_uf, ufn = abjutils::rm_accent(toupper(ufn))), 
+#              'ufn') %>% 
+#   inner_join(select(cnc_tx, id, tx), 'id') %>% 
+#   filter(id != 'DF')
+# br_map_cart <- cartogram(br_map, "tx", 3)
+# d_br_map <- fortify(br_map_cart, region = 'id')
+
+p <- cnc_tx %>% 
+  inner_join(groups, 'id') %>% 
+  group_by(grupo) %>% 
+  mutate(tx_lab = sprintf('[%.1f, %.1f]', min(tx), max(tx))) %>% 
+  ungroup() %>% 
+  mutate(tx = forcats::fct_reorder(tx_lab, tx, min)) %>% 
+  inner_join(br_uf_map) %>% {
+    ggplot(.) +
+      geom_map(aes(x = long, y = lat, map_id = id, fill = tx),
+               colour = 'gray30', size = .1, alpha = .8,
+               map = ., data = .) +
+      scale_fill_brewer(palette = 'PuRd') +
+      coord_equal() +
+      theme_void()
+  }
+p
+
 ```
