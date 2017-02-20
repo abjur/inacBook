@@ -1,1 +1,136 @@
 `r if (knitr:::is_html_output()) '# References {-}'`
+
+## Outras análises
+
+Filtrado apenas para processos transitados em julgado.
+
+```{r}
+tidy_cnc_julg <- tidy_cnc %>% 
+  filter(tipo_pena == 'Trânsito em julgado')
+```
+
+Existe uma relacao de multas e ressarcimentos...
+
+```{r}
+p <- tidy_cnc_julg %>% 
+  filter(vl_multa > 1, vl_ressarcimento > 1) %>% 
+  ggplot(aes(vl_multa, vl_ressarcimento, colour = uf_processo)) +
+  geom_point() +
+  theme_bw() +
+  geom_abline(intercept = 0, slope = 1, colour = 'red') +
+  # facet_wrap(~uf_processo) +
+  scale_x_log10() +
+  scale_y_log10()
+
+
+tidy_cnc_julg %>% 
+  filter(vl_multa > 1, vl_ressarcimento > 1, 
+         vl_multa < 1e6, vl_ressarcimento < 1e6) %>% 
+  mutate(uf_processo = fct_lump(uf_processo, 1, other_level = 'Outros')) %>% 
+  ggplot(aes(vl_multa, vl_ressarcimento, colour = uf_processo)) +
+  theme_bw() +
+  geom_abline(intercept = 0, slope = 1, colour = 'red') +
+  geom_abline(intercept = 0, slope = .5, colour = 'blue') +
+  geom_abline(intercept = 0, slope = 1/3, colour = 'green') +
+  geom_abline(intercept = 0, slope = 2, colour = 'yellow') +
+  geom_point()
+
+```
+
+
+
+```{r}
+tidy_cnc_julg %>% 
+  filter(uf_processo == 'SP') %>% 
+  count(teve_ressarcimento, teve_multa)
+```
+
+```{r}
+tidy_cnc_julg %>% 
+  group_by(assunto_nm_1) %>% 
+  summarise(n = n(), m = median(vl_multa, na.rm = TRUE)) %>% 
+  filter(n > 10) %>% 
+  arrange(desc(m)) %>% 
+  mutate(assunto_nm_1 = str_trunc(assunto_nm_1, 40))
+```
+
+
+```{r}
+tidy_cnc_julg %>% 
+  group_by(assunto_nm_1) %>% 
+  summarise(n = n(), m = median(vl_ressarcimento, na.rm = TRUE)) %>% 
+  filter(n > 10) %>% 
+  arrange(desc(m)) %>% 
+  mutate(assunto_nm_1 = str_trunc(assunto_nm_1, 40))
+```
+
+```{r}
+tidy_cnc_julg %>% 
+  group_by(uf_processo) %>% 
+  summarise(n = n(), m = median(vl_ressarcimento, na.rm = TRUE)) %>% 
+  filter(n > 10) %>% 
+  arrange(desc(m))
+```
+
+```{r}
+tidy_cnc_julg %>% 
+  group_by(uf_processo) %>% 
+  summarise(n = n(), m = median(vl_multa, na.rm = TRUE)) %>% 
+  filter(n > 10) %>% 
+  arrange(desc(m))
+```
+
+
+```{r}
+tidy_cnc_julg %>% 
+  count(nm_pessoa, teve_perda_cargo) %>% 
+  filter(!is.na(teve_perda_cargo)) %>% 
+  arrange(desc(n)) %>% 
+  ungroup() %>% 
+  mutate(nm_pessoa = str_trunc(nm_pessoa, 40))
+
+```
+
+### Processos com mais condenacoes
+
+```{r}
+tidy_cnc %>% 
+  count(id_processo, n_processo, sort = T)
+```
+
+### Processos com mais pessoas
+
+```{r}
+tidy_cnc %>% 
+  group_by(id_processo, n_processo) %>% 
+  summarise(n = n_distinct(id_pessoa)) %>% 
+  arrange(desc(n))
+```
+
+
+```{r}
+tidy_cnc %>% 
+  filter(instancia == '1 grau', esfera_processo == 'Estadual') %>% 
+  group_by(comarca_secao, uf_processo) %>% 
+  summarise(n = n(), multa = median(vl_multa, na.rm = T),
+            ress = median(vl_ressarcimento, na.rm = T)) %>% 
+  filter(n > 10) %>% 
+  arrange(desc(multa))
+
+```
+
+
+## Inconsistências da base
+
+- nomes emblematicos
+- coisas estranhas
+    - ressarcimento > multa
+    - valor atipico de condenacoes / perda de cargo
+    - instancia x tipo de pena
+    - uf pessoa x uf processo
+    - caso de waldir de felicio
+
+```{r}
+
+```
+

@@ -2,17 +2,19 @@
 
 No capítulo anterior, mostramos como a base de dados foi baixada e o conteúdo da base após a fase de arrumação de dados. Neste capítulo, levantaremos preliminarmente alguns aspectos principais que nortearão as análises posteriores.
 
-Todas as argumentações contidas neste relatório foram idealizadas com o intuito principal de explorar três eixos principais:
+Todas as argumentações contidas neste relatório foram idealizadas com o intuito de explorar três eixos principais:
 
 1. Qual foi o dano causado ao patrimônio estatal?
-2. Como os representantes do Estado que cometeram atos ilícitos foram punidos?
-3. Qual é a velocidade com que a justiça brasileira condenou aqueles que cometeram ilícitos?
+1. Como os representantes do Estado que cometeram atos ilícitos foram punidos?
+1. Qual é a velocidade com que a justiça brasileira condenou aqueles que cometeram ilícitos?
 
 Nas subseções seguintes, cada um desses eixos será desmembrado em questões menores, chamadas de questões norteadoras. Além disso, será feita uma breve discussão do racional pretendido para a análise de cada eixo.
 
+---------------------------------------------------------------------
+
 ## Danos
 
-Por mais que as informações em estudo sejam oriundas do Cadastro Nacional de Condenações **Cíveis** por **Ato de Improbidade Administrativa**, aproximadamente metade das condenações cadastradas foram proferidas com base no Código Penal (vide as Tabelas \@ref(tab: tab_civeis) e \@ref(tab:tab_pen), que separam as condenações por assunto). Acreditamos que essa incoerência seja resultado de uma intepretação abrangente da descrição da base pelo próprio Conselho Nacional de Justiça, que possibilita o cadastro de ["atos da Administração que causem danos patrimoniais ou morais ao Estado"](http://www.cnj.jus.br/sistemas/certidoes/20650-cadastro-nacional-de-condenacoes-civeis-por-ato-de-improbidade-administrativa-cnia).
+Por mais que as informações em estudo sejam oriundas do Cadastro Nacional de Condenações **Cíveis** por **Ato de Improbidade Administrativa**, aproximadamente metade das condenações cadastradas foram proferidas com base no Código Penal (vide as Tabelas \@ref(tab:tab_civeis) e \@ref(tab:tab_pen), que separam as condenações por assunto). Acreditamos que essa incoerência seja resultado de uma intepretação abrangente da descrição da base pelo próprio Conselho Nacional de Justiça, que possibilita o cadastro de ["atos da Administração que causem danos patrimoniais ou morais ao Estado"](http://www.cnj.jus.br/sistemas/certidoes/20650-cadastro-nacional-de-condenacoes-civeis-por-ato-de-improbidade-administrativa-cnia).
 
 ```{r tab_civeis}
 
@@ -20,7 +22,7 @@ tidy_cnc %>%
   filter(!assunto_penal_any) %>% 
   count(assunto_nm_1) %>% 
   arrange(desc(n)) %>% 
-  knitr::kable()
+  knitr::kable(caption = 'Volume de condenações por assunto cível.')
 
 ```
 
@@ -30,24 +32,29 @@ tidy_cnc %>%
   filter(assunto_penal_any) %>% 
   count(assunto_nm_1) %>% 
   arrange(desc(n)) %>% 
-  knitr::kable()
+  knitr::kable(caption = 'Volume de ações por assunto penal')
 
 ```
 
-Considerando essa nuance de interpretação, a investigação dos danos causados considerará duas esferas: a moral e a patrimonial. A esfera moral diz respeito à classe de crimes que, através do seu cometimento, os representantes do Estado associam ao governo. Já a esfera patrimonial corresponde explicitamente aos danos financeiros causados aos equipamento estatais, que nos dados do CNIA será acessado considerando os casos em que houve ressarcimento integral do dano causado.
+Considerando essa nuance de interpretação, a investigação dos danos causados considerará duas esferas: a moral e a patrimonial. A esfera moral diz respeito à classe de crimes associados ao governo. Já a esfera patrimonial corresponde explicitamente aos danos financeiros causados aos equipamentos estatais. Nos dados do CNIA, essa informação será acessada considerando os casos em que houve ressarcimento integral do dano causado.
 
-Sendo as duas esferas bastante diferentes, a análise do dano associado a cada uma delas será realizada com o auxílo de um conjunto de questões norteadoras. Essas perguntas servirão como guias de uma investigação mais estruturada.
+As esferas moral e patrimonial exigem estratégias diferentes de análise. Por isso, cada uma delas será realizada com o auxílo de um conjunto de questões norteadoras. Essas perguntas servirão como guias de uma investigação mais estruturada.
 
 Para a análise dos danos patrimoniais, as seguintes questões norteadoras serão atacadas:
 
-1. Quais são os órgãos (prefeituras, polícias, câmaras etc.)/estados que mais sofrem com danos patrimoniais? Segundo os dados do CNIA, qual é o valor desse dano?
-2. Como se dá a distribuição geográfica dos danos patrimoniais?
+1. Quais são os órgãos (prefeituras, polícias, câmaras etc.) que mais sofrem com danos patrimoniais? Segundo os dados do CNIA, qual é o valor desse dano?
+1. Como se dá a distribuição geográfica dos danos patrimoniais?
+1. Qual o perfil dos processos?
+1. Qual o perfil dos condenados?
 
 Já quando considerarmos danos morais, as questões norteadoras serão:
 
 1. Segundo os dados do CNIA, quais são os principais danos causado ao Estado?
-2. Quais são os órgãos/estados que mais sofrem com danos morais?
-3. Como se dá a distribuição geográfica dos danos patrimoniais?
+1. Quais são os órgãos/estados que mais sofrem com danos morais?
+1. Como se dá a distribuição geográfica dos danos patrimoniais?
+1. Qual o perfil dos condenados?
+
+---------------------------------------------------------------------
 
 ## Punições
 
@@ -62,13 +69,15 @@ O CNIA permite o cadastro de sete tipos de punições distintas:
 - Suspensão dos Direitos Políticos.
 - Proibição de Contratar com o Poder Público ou receber incentivos fiscais ou creditícios, direta ou indiretamente, ainda que por intermédio de pessoa jurídica da qual seja sócio majoritário.
 
-Considerando os danos existentes, este eixo de investigação busca descrever as punições aplicadas em diversos cenários. A motivação por trás desse levantamento é a avaliação da severidade com que pune, sendo a impunidade uma preocupação latente.
+Considerando os danos existentes, este eixo de investigação busca descrever as punições aplicadas em diversos cenários. A motivação por trás desse levantamento é a avaliação da severidade com que se pune, sendo a impunidade uma preocupação latente.
 
 As questões norteadoras deste eixo são:
 
 1. Quais são as punições aplicadas à danos morais?
-2. Quais são as punições aplicadas à danos patrimoniais?
-3. Qual é a relação entre multas e danos patrimoniais?
+1. Quais são as punições aplicadas à danos patrimoniais?
+1. Qual é a relação entre multas e danos patrimoniais?
+
+---------------------------------------------------------------------
 
 ## Tempos
 
