@@ -44,8 +44,8 @@ Para a análise dos danos patrimoniais, as seguintes questões norteadoras serã
 
 1. Quais são os órgãos (prefeituras, polícias, câmaras etc.) que mais sofrem com danos patrimoniais? Segundo os dados do CNIA, qual é o valor desse dano?
 1. Como se dá a distribuição geográfica dos danos patrimoniais?
-1. Qual o perfil dos processos?
-1. Qual o perfil dos condenados?
+1. Qual é o perfil dos processos?
+1. Qual é o perfil dos condenados?
 
 Já quando considerarmos danos morais, as questões norteadoras serão:
 
