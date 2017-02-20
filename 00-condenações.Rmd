@@ -152,7 +152,9 @@ todas_as_penas <- tidy_cnc %>%
 
 Outra diferença relevante entre condenações cíveis e criminais está nas punições aplicadas. O CNIA registra 7 tipos de punições distintas, mas algumas dessas são mais frequentemente aplicadas em condenações criminais.
 
-Consultando a lista de conjuntos de punições mais aplicados em condenações criminais, verificamos que as penas Inelegibilidade e Pena Privativa de Liberdade são aplicadas em 72% das condenações criminais.
+Consultando a lista de conjuntos de punições mais aplicados em condenações criminais, verificamos que as penas Inelegibilidade e Pena Privativa de Liberdade são aplicadas conjuntamente, mas sem as demais, em 72% das condenações criminais. A pena de Inelegiblidade sozinha é aplicada em 19% dos casos, de tal forma que os dois padrões de punição mencionados abarcam 91% das condações criminais criminais.
+
+Um cenários mais pulverizado aparece nas condenações cíveis, em que não há uma única classe de penas que sobressaia sobre as outras. Entretanto, mesmo nesse contexto, é possível identificar três temas que sobresaem-se sobre os outros: Multas, Inelegilibade e Ressarcimento.
 
 ```{r}
 
