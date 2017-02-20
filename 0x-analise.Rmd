@@ -4,6 +4,15 @@ No capítulo anterior, mostramos como a base de dados foi baixada e o conteúdo 
 
 Todas as argumentações contidas neste relatório foram idealizadas com o intuito de explorar três eixos principais:
 
+```{r eval=FALSE, echo=FALSE}
+# quais sao nossos filtros para todas as analises?
+# 
+# transito em julgado / orgao colegiado
+# esfera federal / estadual
+# tipo penal / patrimonial
+# instancia
+```
+
 1. Qual foi o dano causado ao patrimônio estatal?
 1. Como os representantes do Estado que cometeram atos ilícitos foram punidos?
 1. Qual é a velocidade com que a justiça brasileira condenou aqueles que cometeram ilícitos?
@@ -54,6 +63,11 @@ Já quando considerarmos danos morais, as questões norteadoras serão:
 1. Como se dá a distribuição geográfica dos danos patrimoniais?
 1. Qual o perfil dos condenados?
 
+```{r eval=FALSE, echo=FALSE}
+# em cada topico, adicionar lista de suposicoes antes das analises
+# montar mais analises nos arquivos .R
+```
+
 ---------------------------------------------------------------------
 
 ## Punições
@@ -81,5 +95,20 @@ As questões norteadoras deste eixo são:
 
 ## Tempos
 
+Existem três tipos de punição associadas a tempos:
 
+- Pena privativa de liberdade.
+- Suspensão dos Direitos Políticos.
+- Proibição de Contratar com o Poder Público ou receber incentivos fiscais ou creditícios, direta ou indiretamente, ainda que por intermédio de pessoa jurídica da qual seja sócio majoritário.
+
+Com base nisso, temos duas questões norteadoras principais
+
+1. Como se distribuem os tempos das punições?
+1. Como se comportam os tempos dos processos?
+
+```{r}
+# Estratégia
+# 
+# Criar um BD de filtros e rodar os scripts de R para cada combinação
+```
 
