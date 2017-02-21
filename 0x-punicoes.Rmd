@@ -1,0 +1,21 @@
+```{r}
+tidy_cnc %>% 
+  gather(key, val, starts_with('teve_')) %>% 
+  filter(val) %>% 
+  count(tipo_pessoa, key) %>% 
+  mutate(prop = n / sum(n)) %>%
+  ungroup() %>% 
+  mutate(key = str_to_title(str_extract(key, '[a-z]+$'))) %>% 
+  arrange(tipo_pessoa, desc(prop)) %>% 
+  mutate(key = fct_reorder(key, prop, first, .desc = TRUE)) %>% {
+    conts <- count()
+    ggplot(., aes(x = key, y = prop)) +
+      geom_col(aes(fill = tipo_pessoa), 
+               position = 'dodge') +
+      scale_y_continuous(labels = scales::percent) +
+      theme_bw(14) +
+      theme(axis.text.x = element_text(angle = 45, hjust = 1))
+  }
+  
+```
+

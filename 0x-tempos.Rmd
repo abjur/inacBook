@@ -1,0 +1,305 @@
+## Inconsistências
+
+### Duração vazia segundo os dois métodos
+
+```{r}
+tidy_cnc %>% 
+  gather(key, val, teve_pena, teve_proibicao, teve_suspensao) %>% 
+  filter(val) %>% 
+  group_by(key) %>% 
+  do({
+    nome_var <- str_extract(.$key[1], '[a-z]+$')
+    select(., matches(paste0('duracao_', nome_var))) %>% 
+      setNames(c('a', 'b')) %>% 
+      count(na_regex = is.na(a), na_site = is.na(b))
+  }) %>% 
+  ungroup()
+```
+
+- O método regex só existe para a punição 'pena'
+- Quando punição é pena, temos muitos casos (~17k) em que o método regex se aplica mas o método de diferença de datas não.
+- Somente um caso com `teve_suspensao`, mas sem duracao da suspensao.
+
+### Duração diferente usando dois métodos (regex e diferença entre "de" e "até").
+
+```{r}
+tol <- 20
+tidy_cnc %>% 
+  gather(key, val, teve_pena, teve_proibicao, teve_suspensao) %>% 
+  filter(val) %>% 
+  group_by(key) %>% 
+  do(lst = {
+    nome_var <- str_extract(.$key[1], '[a-z]+$')
+    select(., matches(paste0('duracao_', nome_var))) %>% 
+      setNames(c('a', 'b')) %>% 
+      count(bug = abs(as.numeric(a - b)) > tol)
+  }) %>% 
+  unnest(lst) %>% 
+  group_by(key) %>% 
+  summarise(n_bug = sum(n[bug], na.rm = TRUE),
+            prop_bug = n_bug / sum(n[!is.na(bug)]))
+```
+
+- Temos 295 processos (~17% dos casos em que houve pena) com datas muito discrepantes
+- Nos casos discrepantes, vamos considerar o método regex.
+
+### Tempo de processos
+
+Lógica
+
+Propositura -> (cadastro) -> pena -> (cadastro)
+
+Não pode:
+  - propositura após cadastro
+  - pena antes de propositura
+
+Propositura após cadastros está OK. Para pena antes de propositura, na maioria dos casos ruins o tempo é zero.
+
+```{r}
+tidy_cnc %>% 
+  filter(dt_pena <= dt_propositura) %>% 
+  mutate(tempo_zero = (dt_propositura - dt_pena == 0)) %>% 
+  count(tempo_zero)
+```
+
+- Decisão: tirar casos com tempo menor ou igual a zero.
+
+-------------------------------------------------------------------------------
+
+### BD final após análise de inconsistências para tempos
+
+```{r}
+tidy_cnc_clean <- tidy_cnc %>% 
+  mutate(
+    duracao_pena = if_else(is.na(duracao_pena), duracao_pena_regex, duracao_pena),
+    duracao_pena = if_else(abs(as.numeric(duracao_pena - duracao_pena_regex)) > tol, 
+                           duracao_pena_regex, duracao_pena)
+  ) %>% 
+  select(-duracao_pena_regex) %>% 
+  filter(dt_pena > dt_propositura)
+```
+
+-------------------------------------------------------------------------------
+
+## Análise da duração das punições
+
+### Pena privativa de liberdade.
+
+```{r}
+tidy_cnc_pena <- tidy_cnc_clean %>% 
+  filter(teve_pena, tipo_pena == 'Trânsito em julgado')
+```
+
+```{r}
+tidy_cnc_pena %>% 
+  count(esfera_processo, assunto_penal_any)
+```
+
+
+```{r}
+tidy_cnc_pena %>% 
+  filter(esfera_processo %in% c('Estadual', 'Federal')) %>% 
+  ggplot(aes(x = duracao_pena / 365)) +
+  geom_density(aes(fill = esfera_processo), alpha = .4) +
+  xlab('Duração da pena (anos)') +
+  theme_bw(16) +
+  scale_x_continuous(breaks = c(0:10) * 5) +
+  scale_y_continuous(labels = scales::percent)
+```
+
+```{r}
+resumir <- function(x) {
+  c(n = length(x),
+    n_na = sum(is.na(x)),
+    mean = mean(x, na.rm = TRUE),
+    sd = sd(x, na.rm = TRUE),
+    min = min(x, na.rm = TRUE),
+    qt = quantile(x, .25, na.rm = TRUE),
+    median = median(x, na.rm = TRUE),
+    qt = quantile(x, .75, na.rm = TRUE),
+    max = max(x, na.rm = TRUE)) %>% 
+    enframe() %>% 
+    mutate(name = factor(name, levels = name))
+}
+
+tidy_cnc_pena %>% 
+  filter(esfera_processo %in% c('Estadual', 'Federal')) %>% 
+  group_by(esfera_processo) %>% 
+  do(resumir(.$duracao_pena)) %>% 
+  spread(name, value) %>% 
+  ungroup() %>% 
+  knitr::kable()
+```
+
+
+```{r}
+tidy_cnc_pena %>% 
+  filter(esfera_processo %in% c('Estadual')) %>% 
+  mutate(uf_processo = fct_lump(uf_processo, 
+                                prop = .005, 
+                                other_level = 'Outros')) %>% 
+  group_by(uf_processo) %>% 
+  do(resumir(.$duracao_pena)) %>% 
+  filter(!name %in% c('n_na')) %>% 
+  mutate(value = round(value)) %>% 
+  spread(name, value) %>% 
+  ungroup() %>% 
+  arrange(desc(n)) %>% 
+  DT::datatable()
+```
+
+```{r}
+tidy_cnc_pena %>% 
+  filter(esfera_processo %in% c('Estadual')) %>% 
+  ggplot(aes(x = duracao_pena / 365)) +
+  geom_density(adjust = .3) +
+  scale_x_continuous(breaks = 0:100) +
+  theme_bw()
+```
+
+
+Note que não temos penas em São Paulo e que a maior concentração de penas está em MG. O maior valor médio encontrado está no Espírito Santo.
+
+### Suspensão dos Direitos Políticos.
+
+```{r}
+tidy_cnc_suspensao <- tidy_cnc_clean %>% 
+  filter(teve_suspensao, tipo_pena == 'Trânsito em julgado') %>% 
+  mutate(duracao_suspensao = if_else(
+    is.na(duracao_suspensao) | duracao_suspensao < 0,
+    NA_real_, duracao_suspensao
+  ))
+```
+
+
+```{r}
+tidy_cnc_suspensao %>% 
+  filter(esfera_processo %in% c('Estadual')) %>% 
+  mutate(uf_processo = fct_lump(uf_processo, 
+                                prop = .005, 
+                                other_level = 'Outros')) %>% 
+  group_by(uf_processo) %>% 
+  do(resumir(.$duracao_suspensao)) %>% 
+  mutate(value = round(value)) %>% 
+  spread(name, value) %>% 
+  ungroup() %>% 
+  arrange(desc(n)) %>% 
+  DT::datatable()
+```
+
+```{r}
+tidy_cnc_suspensao %>% 
+  filter(duracao_suspensao < 11 * 365) %>% 
+  ggplot(aes(x = duracao_suspensao / 365)) +
+  geom_vline(xintercept = 1:10, colour = 'gray80') +
+  geom_histogram(bins = 40) +
+  theme_bw() +
+  scale_x_continuous(breaks = 0:20) +
+  xlab('Duração da suspensão (anos)')
+```
+
+Note a concentração em anos cheios
+
+
+```{r}
+tidy_cnc_suspensao %>% 
+  filter(esfera_processo %in% c('Estadual')) %>% 
+  mutate(anos_suspensao = cut(duracao_suspensao / 365, 
+                              c(0:10, 16))) %>% 
+  mutate(uf_processo = fct_lump(uf_processo, 6, 
+                                other_level = 'Outros')) %>% 
+  count(uf_processo, anos_suspensao) %>% 
+  mutate(prop = n / sum(n)) %>% 
+  ggplot(aes(x = anos_suspensao, y = prop)) +
+  geom_bar(aes(fill = uf_processo), colour = 'gray10',
+           position = 'dodge', stat = 'identity') +
+  # facet_wrap(~uf_processo, scales = 'free_y') +
+  theme_bw()
+```
+
+### Proibição de Contratar com o Poder Público
+
+```{r}
+tidy_cnc_proibicao <- tidy_cnc_clean %>% 
+  filter(teve_proibicao, tipo_pena == 'Trânsito em julgado') %>% 
+  mutate(duracao_proibicao = if_else(
+    is.na(duracao_proibicao) | duracao_proibicao < 0,
+    NA_real_, duracao_proibicao
+  ))
+```
+
+
+```{r}
+tidy_cnc_proibicao %>% 
+  filter(esfera_processo %in% c('Estadual')) %>% 
+  mutate(uf_processo = fct_lump(uf_processo, 
+                                prop = .005, 
+                                other_level = 'Outros')) %>% 
+  group_by(uf_processo) %>% 
+  do(resumir(.$duracao_proibicao)) %>% 
+  mutate(value = round(value)) %>% 
+  spread(name, value) %>% 
+  ungroup() %>% 
+  arrange(desc(n)) %>% 
+  DT::datatable()
+```
+
+```{r}
+tidy_cnc_proibicao %>% 
+  filter(duracao_proibicao < 11 * 365) %>% 
+  ggplot(aes(x = duracao_proibicao / 365)) +
+  geom_vline(xintercept = 1:10, colour = 'gray80') +
+  geom_histogram(bins = 40) +
+  theme_bw() +
+  scale_x_continuous(breaks = 0:20) +
+  xlab('Duração da proibição (anos)')
+```
+
+```{r}
+tidy_cnc_proibicao %>% 
+  filter(esfera_processo %in% c('Estadual')) %>% 
+  mutate(anos_proibicao = cut(duracao_proibicao / 365, 
+                              c(0:10, 16))) %>% 
+  mutate(uf_processo = fct_lump(uf_processo, 6, 
+                                other_level = 'Outros')) %>% 
+  count(uf_processo, anos_proibicao) %>% 
+  mutate(prop = n / sum(n)) %>% 
+  ggplot(aes(x = anos_proibicao, y = prop)) +
+  geom_bar(aes(fill = uf_processo), colour = 'gray10',
+           position = 'dodge', stat = 'identity') +
+  # facet_wrap(~uf_processo, scales = 'free_y') +
+  theme_bw()
+```
+
+
+```{r}
+tidy_cnc_proibicao %>% 
+  count(tipo_pessoa) %>% 
+  count(assunto_penal_any)
+```
+
+
+## Análise dos tempos dos processos
+
+```{r}
+tidy_cnc %>% 
+  mutate(tempo_processo = as.numeric(dt_pena - dt_propositura)) %>% 
+  filter(tempo_processo > 0, tipo_pena == 'Trânsito em julgado') %>%
+  mutate(esfera_processo = fct_lump(esfera_processo, 2)) %>% 
+  mutate(instancia = fct_lump(instancia, 2)) %>% 
+  filter(as.character(instancia) != 'Other') %>% 
+  filter(as.character(esfera_processo) != 'Other') %>% 
+  identity() %>% {
+    txt <- count(., uf_processo, instancia, esfera_processo)
+    ggplot(., aes(x = uf_processo, y = tempo_processo)) +
+      geom_boxplot() +
+      facet_grid(instancia ~ esfera_processo) +
+      geom_text(aes(label = n, y = 7000), data = txt) +
+      theme_bw()
+  }
+  
+```
+
+
+
+
