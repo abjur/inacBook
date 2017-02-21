@@ -1,0 +1,204 @@
+#Danos
+
+## Estrutura de análise
+
+Neste capítulo, vamos investigar os danos que as condutas dos condenados cadastrados no CNIA causaram ao Estado.
+
+A primeira questão norteadora deste eixo questiona a natureza dos danos causados. Neste relatório, vamos admitir que os danos registrados no CNIA são (i) danos patrimoniais, que são medidos em valores monetários nas sentenças em que o réu foi condenado ao ressarcimento integral do dano causado ou (ii) danos morais, que são máculas na reputação do Estado causadas pela má conduta dos seus representantes.
+
+Essas duas possibilidades serão tratadas separadamente nas duas subseções que seguem. Os tópicos dentro das subseções respondem às questões norteadoras conforme levantadas no capítulo anterior.
+
+## Danos patrimoniais
+
+```{r}
+library(scales)
+
+tidy_cnc_civel <- tidy_cnc %>% 
+  filter(!assunto_penal_any)
+
+total_civeis <- nrow(tidy_cnc_civel)
+total_civeis_ressarcimento <- nrow(filter(tidy_cnc_civel, teve_ressarcimento))
+prop_civeis <- percent(total_civeis_ressarcimento/total_civeis)
+
+total <- nrow(tidy_cnc)
+total_ressarcimento <- nrow(filter(tidy_cnc, teve_ressarcimento))
+prop_total <- percent(total_ressarcimento/total)
+
+prop_criminal <- percent((total_ressarcimento-total_civeis_ressarcimento)/(total-total_civeis))
+
+crimes_com_ressarcimento <- tidy_cnc %>% 
+  filter(assunto_penal_all) %>% 
+  filter(teve_ressarcimento) %>% 
+  with(assunto_nm_1) %>%
+  unique
+
+tabela_de_crimes <- tidy_cnc %>% 
+  filter(assunto_nm_1 %in% crimes_com_ressarcimento) %>% 
+  group_by(assunto_nm_1) %>% 
+  summarise(prop_ress = sum(teve_ressarcimento)/n(),
+            freq = n())
+
+prop_arrumada <- tidy_cnc %>% 
+  filter(assunto_nm_1 %in% crimes_com_ressarcimento | !assunto_penal_all) %>%
+  summarise(total = sum(teve_ressarcimento)/n()) %>% 
+  with(total) %>% 
+  percent
+
+tidy_ressarcimento <- tidy_cnc %>% 
+  filter(teve_ressarcimento, vl_ressarcimento <= 5.877361e+07)
+
+tidy_ressarcimento_pos_cnc <- tidy_ressarcimento %>% 
+  filter(dt_pena > min(dt_cadastro))
+
+ressarcimentos_por_ano <- tidy_ressarcimento_pos_cnc %>% 
+  mutate(ano = year(dt_pena)) %>% 
+  filter(ano <= 2015, vl_ressarcimento <= 5.877361e+07) %>% 
+  group_by(ano) %>% 
+  summarise(ress = sum(vl_ressarcimento)/10^6)
+
+cadastrados_por_ano_ultimos_6_meses <- tidy_ressarcimento_pos_cnc %>% 
+    filter(dt_cadastro > max(dt_cadastro)%m-%months(6), vl_ressarcimento <= 5.877361e+07) %>% 
+    mutate(ano = year(dt_pena)) %>% 
+    group_by(ano) %>% 
+    summarise(freq = n(),
+              ress = format(sum(vl_ressarcimento)/freq/10^6, digits = 4))
+
+soma <- ressarcimentos_por_ano %>% 
+  with(sum(ress))
+
+ressarcimentos_bizarros <- tidy_ressarcimento_pos_cnc %>% 
+  filter(vl_ressarcimento <= 5.877361e+07)
+
+```
+
+### Frequência
+
+Utilizando a tipologia induzida pelos registros do CNIA, os danos patrimoniais serão medidos através das sentenças que impõem o ressarcimento integral dos danos causados. Do total de `r total` condenações, `r total_ressarcimento` resultaram em ressarcimentos integrais dos danos. Essa quantidade corresponde a um percentual de `r prop_total` das condenações resultando em ressarcimento de danos. No entanto, essa proporção está levando em conta as `r total - total_civeis` condenações criminais, que são pouco sucetíveis à ressarcimentos financeiros: identificamos danos patrimoniais em apenas `r prop_criminal` das condenações criminais. 
+
+```{r}
+tidy_cnc %>% 
+  with(table(assunto_penal_any, teve_ressarcimento))
+```
+
+Os assuntos processuais da árvore do Direito Penal em que há ressarcimento estão listadas em \@ref(tab:crimes_com_ressarcimento). Considerando apenas esses casos como sucetíveis à condenações de ressarcimento pode-se dizer que ocorre o ressarcimento em `r prop_arrumada` das condenações em que a compensação é factível.
+
+```{r crimes_com_ressarcimento}
+tabela_de_crimes %>% 
+  arrange(desc(prop_ress)) %>% 
+  mutate(prop_ress = percent(prop_ress),
+         assunto_nm_1 = str_wrap(assunto_nm_1, 20)) %>% 
+  setNames(c("Assunto","Proporção de ressarcimentos","Frequência")) %>% 
+  knitr::kable(caption = "Crimes") 
+```
+
+### Tamanho e tempo
+
+Passando a falar de valores de ressarcimento, nas `r nrow(tidy_ressarcimento_pos_cnc)` condenações registradas após a criação do cadastro, em 2008, o dano total estimado é de `r soma` milhões de reais. Essa quantidade foi estimada desconsiderando eventos atípicos. Além disso, essa quantidade pode ser interpretada como um limite inferior para o dano efetivamente causado, já que novas condenações são registradas no CNIA todos os dias, conforme indica a tabela \@ref(tab: cadastros_novos). 
+
+```{r}
+
+ressarcimentos_por_ano %>% 
+  ggplot(aes(x = ano, y = ress)) +
+  geom_line(col = 'royalblue') + 
+  theme_bw(15) +
+  scale_x_continuous(breaks = min(ressarcimentos_por_ano$ano):max(ressarcimentos_por_ano$ano)) +
+  ylab("Ressarcimento até\no momento (MM R$)") + 
+  xlab("Ano")
+
+```
+
+```{r cadastros_novos}
+cadastrados_por_ano_ultimos_6_meses %>% 
+  setNames(c("Ano da condenação", "Frequência", "Ressarcimento médio (MM R$)")) %>% 
+  knitr::kable(caption = "Anos de condenação das condenações com ressarcimento cadastradas nos últimos 6 meses.")
+```
+
+<!-- tem que fazer a conta do valor ressarcido considerando só as condenações após o começo dos registros, porque senão estaremos fazendo uma análise prospectiva -->
+
+### Órgãos
+
+Os órgãos mais atingidos pelos danos patrimoniais são as prefeituras municipais.
+
+```{r}
+  tidy_ressarcimento_pos_cnc %>% 
+  group_by(orgao) %>% 
+  summarise(ress = round(sum(vl_ressarcimento, na.rm = T)/10^6, 2)) %>% 
+  arrange(desc(ress)) %>% 
+  setNames(c("Órgão", "Ressarcimento (MM R$)")) %>% 
+  knitr::kable()
+```
+
+### Distribuição geográfica
+
+```{r ress_abs}
+
+N <- 12
+
+# cortes <- c(0, rep(c(1,5), N)*rep(10^(1:N), each = 2)) 
+
+cortes <- c(0, 10^(1:N))
+
+brks <- cut(c(cortes), breaks = c(cortes))
+
+lbs <- c("0","<10","10<100","100<1M",
+         "1M<10M","10M<100M","100M<1MM","1MM<10MM",
+         "10MM<100MM","100MM<1Bi","1Bi<10Bi", "10Bi<100Bi",
+         "100Bi<1Tri")
+
+tidy_ressarcimento_pos_cnc %>%
+    mutate(id = uf_processo) %>%
+    group_by(id, tipo_pena) %>%
+    summarise(vl_ressarcimento = sum(vl_ressarcimento)) %>%
+    ungroup() %>% 
+    complete(id, tipo_pena, fill = list(vl_ressarcimento = 0)) %>% 
+    mutate(vl_ressarcimento = cut(vl_ressarcimento, cortes)) %>% 
+    inner_join(br_uf_map) %>% {
+      ggplot(.) +
+        geom_map(aes(x = long, y = lat, map_id = id, fill = vl_ressarcimento), color = 'gray30', map = ., data = .) +
+        scale_fill_brewer(palette = 'PuRd', breaks = brks, labels = lbs, name = 'Valor do ressarcimento') + 
+        coord_equal() +
+        theme_void() +
+        facet_wrap(~tipo_pena)
+    }
+```
+
+```{r ress_rel}
+
+cortes_tx <- seq(0,5,by = 0.5)
+
+brks_tx <- cut(c(cortes_tx), breaks = c(cortes_tx))
+
+lbs_tx <- c("NA","<0.5","10<100","100<1M",
+         "1M<10M","10M<100M","100M<1MM","1MM<10MM",
+         "10MM<100MM","100MM<1Bi","1Bi<10Bi", "10Bi<100Bi",
+         "100Bi<1Tri")
+
+tidy_ressarcimento_pos_cnc %>%
+    mutate(id = uf_processo) %>%
+    group_by(id, tipo_pena) %>%
+    summarise(vl_ressarcimento = sum(vl_ressarcimento)) %>%
+    inner_join(pnud_uf, 'id') %>%
+    mutate(vl_ressarcimento = vl_ressarcimento / popt * 100000) %>%
+    ungroup() %>% 
+    complete(id, tipo_pena, fill = list(vl_ressarcimento = 0)) %>% 
+    mutate(vl_ressarcimento = cut(vl_ressarcimento, cortes)) %>% 
+    inner_join(br_uf_map) %>% {
+      ggplot(.) +
+        geom_map(aes(x = long, y = lat, map_id = id, fill = vl_ressarcimento), color = 'gray30', map = ., data = .) +
+        scale_fill_brewer(palette = 'PuRd', breaks = brks, labels = lbs, name = 'Ressarcimento per capita') + 
+        coord_equal() +
+        theme_void() +
+        facet_wrap(~tipo_pena)
+    }
+
+```
+
+## Perfis
+
+### Processos
+
+
+
+### Condenados
+
+## Condenações Criminais

@@ -7,7 +7,7 @@ Todas as argumentações contidas neste relatório foram idealizadas com o intui
 ```{r eval=FALSE, echo=FALSE}
 # quais sao nossos filtros para todas as analises?
 # 
-# transito em julgado / orgao colegiado
+# transito em julgado / orgao colegiado 
 # esfera federal / estadual
 # tipo penal / patrimonial
 # instancia
@@ -51,14 +51,23 @@ As esferas moral e patrimonial exigem estratégias diferentes de análise. Por i
 
 Para a análise dos danos patrimoniais, as seguintes questões norteadoras serão atacadas:
 
-1. Quais são os órgãos (prefeituras, polícias, câmaras etc.) que mais sofrem com danos patrimoniais? Segundo os dados do CNIA, qual é o valor desse dano?
+1. Qual é a magnitude do dano causado?
+1. As mensurações variam com o tempo?
+1. Qual é frequência com que se identificam os danos?
 1. Como se dá a distribuição geográfica dos danos patrimoniais?
-1. Qual o perfil dos processos?
-1. Qual o perfil dos condenados?
+1. Como as características dos processos impactam os danos patrimoniais?
+    - Esfera
+    - Instancia
+    - Tipo da condenação
+1. Como as características dos condenados impactam os danos patrimoniais?
+    - Órgão
+    - Tipo de pessoa
 
 Já quando considerarmos danos morais, as questões norteadoras serão:
 
-1. Segundo os dados do CNIA, quais são os principais danos causado ao Estado?
+1. Segundo os dados do CNIA, quais são os principais danos causados?
+1. As mensurações variam com o tempo?
+1. Qual é frequência com que se identificam os danos?
 1. Quais são os órgãos/estados que mais sofrem com danos morais?
 1. Como se dá a distribuição geográfica dos danos patrimoniais?
 1. Qual o perfil dos condenados?
