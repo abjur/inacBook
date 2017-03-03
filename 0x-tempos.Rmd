@@ -309,5 +309,67 @@ tidy_cnc %>%
 ```
 
 
+-------------------------------------------------------------------------------
 
+## Historinha
+
+```{r}
+tidy_cnc_clean
+```
+
+### Punições
+
+```{r}
+
+```
+
+### Processos
+
+```{r}
+grupos <- c('instancia', 'esfera_processo')
+
+tabela_tempos <- function(d, ...) {
+  l <- lazyeval::lazy_dots(...)
+  v <- as.character(purrr::transpose(l)$expr)
+  dx <- d %>% 
+    filter(tipo_pena == 'Trânsito em julgado') %>% 
+    mutate(tempo = as.numeric(dt_pena - dt_propositura, units = 'days'))
+  tab1 <- dx %>%     
+    group_by_(.dots = l) %>% 
+    do(resumir(.$tempo)) %>% 
+    mutate(value = round(value)) %>% 
+    spread(name, value) %>% 
+    ungroup() %>% 
+    arrange(desc(n))
+  tab2 <- dx %>%
+    do(resumir(.$tempo)) %>%
+    mutate(value = round(value)) %>%
+    spread(name, value) %>%
+    ungroup()
+  res <- bind_rows(tab1, tab2)
+  res[[v[1]]][nrow(res)] <- 'Total'
+  res
+}
+
+tidy_cnc_clean %>% 
+  tabela_tempos(instancia, esfera_processo)
+
+tidy_cnc_clean %>% 
+  tabela_tempos(esfera)
+
+tidy_cnc_clean %>% 
+  tabela_tempos(publico)
+
+tidy_cnc_clean %>% 
+  tabela_tempos(sexo)
+
+tidy_cnc_clean %>% 
+  tabela_tempos(tipo_pessoa)
+
+tidy_cnc_clean %>% 
+  filter(instancia == '1 grau') %>% 
+  tabela_tempos(uf_processo) %>% 
+  filter(n > 200)
+
+```
 
