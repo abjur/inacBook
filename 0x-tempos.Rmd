@@ -86,8 +86,7 @@ tidy_cnc_clean <- tidy_cnc %>%
 ### Pena privativa de liberdade.
 
 ```{r}
-tidy_cnc_pena <- tidy_cnc_clean %>% 
-  filter(teve_pena, tipo_pena == 'Trânsito em julgado')
+tidy_cnc_pena <- tidy_cnc_clean
 ```
 
 ```{r}
@@ -104,7 +103,8 @@ tidy_cnc_pena %>%
   xlab('Duração da pena (anos)') +
   theme_bw(16) +
   scale_x_continuous(breaks = c(0:10) * 5) +
-  scale_y_continuous(labels = scales::percent)
+  scale_y_continuous(labels = scales::percent) +
+  facet_wrap(~tipo_pena, ncol = 1)
 ```
 
 ```{r}
@@ -157,6 +157,14 @@ tidy_cnc_pena %>%
   theme_bw()
 ```
 
+```{r}
+tidy_cnc_pena %>% 
+    filter(esfera_processo %in% c('Estadual'), assunto_penal_any) %>% mutate(assunto_nm_1 = fct_lump(assunto_nm_1, prop = 0.1)) %>%  
+    ggplot(aes(x = duracao_pena / 365)) +
+    geom_density(aes(fill = assunto_nm_1), adjust = .3)+
+    scale_x_continuous(breaks = 0:100) +
+    theme_bw() + facet_grid(instancia~assunto_nm_1)
+```
 
 Note que não temos penas em São Paulo e que a maior concentração de penas está em MG. O maior valor médio encontrado está no Espírito Santo.
 

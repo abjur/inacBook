@@ -1,8 +1,8 @@
 # Estratégia de Análise
 
-No capítulo anterior, mostramos como a base de dados foi baixada e o conteúdo da base após a fase de arrumação de dados. Neste capítulo, levantaremos preliminarmente alguns aspectos principais que nortearão as análises posteriores.
+No capítulo anterior, mostramos como a base de dados foi baixada e o conteúdo da base após a fase de arrumação dos dados. Neste capítulo, levantaremos preliminarmente alguns aspectos principais que nortearão as análises posteriores.
 
-Todas as argumentações contidas neste relatório foram idealizadas com o intuito de explorar três eixos principais:
+Todas as argumentações contidas neste relatório foram idealizadas com o intuito de responder duas questões norteadoras:
 
 ```{r eval=FALSE, echo=FALSE}
 # quais sao nossos filtros para todas as analises?
@@ -15,9 +15,10 @@ Todas as argumentações contidas neste relatório foram idealizadas com o intui
 
 1. Qual foi o dano causado ao patrimônio estatal?
 1. Como foram punidos os representantes do Estado que cometeram atos ilícitos?
-1. Qual é a velocidade com que a justiça brasileira condenou aqueles que cometeram ilícitos?
 
 Nas subseções seguintes, cada um desses eixos será desmembrado em questões menores, chamadas de questões norteadoras. Além disso, será feita uma breve discussão do racional pretendido para a análise de cada eixo.
+
+A última subseção será reservada para a exposição de algumas características da base que aparecerão em várias análises. 
 
 ---------------------------------------------------------------------
 
@@ -45,32 +46,32 @@ tidy_cnc %>%
 
 ```
 
-Considerando essa nuance de interpretação, a investigação dos danos causados considerará duas esferas: a moral e a patrimonial. A esfera moral diz respeito à classe de crimes associados ao governo. Já a esfera patrimonial corresponde explicitamente aos danos financeiros causados aos equipamentos estatais. Nos dados do CNIA, essa informação será acessada considerando os casos em que houve ressarcimento integral do dano causado.
+Considerando essa nuance de interpretação, a investigação dos danos causados considerará duas esferas: a moral e a patrimonial. A esfera moral diz respeito à classe de crimes praticados pelos representantes do governo. Já a esfera patrimonial corresponde explicitamente aos danos financeiros causados aos equipamentos estatais. Nos dados do CNIA, essa informação será acessada considerando os casos em que houve ressarcimento integral do dano causado.
 
-As esferas moral e patrimonial exigem estratégias diferentes de análise. Por isso, cada uma delas será realizada com o auxílo de um conjunto de questões norteadoras. Essas perguntas servirão como guias de uma investigação mais estruturada.
+As esferas moral e patrimonial exigem estratégias diferentes de análise. Por isso, cada uma dessas análises será realizada em pequenos eixos. Essas perguntas servirão como guias de uma investigação mais estruturada.
 
-Para a análise dos danos patrimoniais, as seguintes questões norteadoras serão atacadas:
+Para a análise dos danos patrimoniais, consideraremos os seguintes eixos:
 
-1. Qual é a magnitude do dano causado?
-1. As mensurações variam com o tempo?
-1. Qual é frequência com que se identificam os danos?
-1. Como se dá a distribuição geográfica dos danos patrimoniais?
-1. Como as características dos processos impactam os danos patrimoniais?
+1. Magnitude do dano causado
+1. Tendências temporais
+1. Distribuição geográfica
+1. Perfil dos processos
     - Esfera
     - Instancia
-    - Tipo da condenação
-1. Como as características dos condenados impactam os danos patrimoniais?
+1. Perfil dos condenados
     - Órgão
     - Tipo de pessoa
 
-Já quando considerarmos danos morais, as questões norteadoras serão:
+Já quando considerarmos danos morais, os eixos serão:
 
-1. Segundo os dados do CNIA, quais são os principais danos causados?
-1. As mensurações variam com o tempo?
-1. Qual é frequência com que se identificam os danos?
-1. Quais são os órgãos/estados que mais sofrem com danos morais?
-1. Como se dá a distribuição geográfica dos danos patrimoniais?
-1. Qual o perfil dos condenados?
+1. Tipos de crimes e volume
+1. Tendências temporais
+1. Perfil dos processos
+    - Esfera
+    - Instancia
+1. Perfil dos condenados
+    - Órgão
+    - Tipo de pessoa
 
 ```{r eval=FALSE, echo=FALSE}
 # em cada topico, adicionar lista de suposicoes antes das analises
@@ -92,32 +93,36 @@ O CNIA permite o cadastro de sete tipos de punições distintas:
 - Suspensão dos Direitos Políticos.
 - Proibição de Contratar com o Poder Público ou receber incentivos fiscais ou creditícios, direta ou indiretamente, ainda que por intermédio de pessoa jurídica da qual seja sócio majoritário.
 
-Considerando os danos existentes, este eixo de investigação busca descrever as punições aplicadas em diversos cenários. A motivação por trás desse levantamento é a avaliação da severidade com que se pune, sendo a impunidade uma preocupação latente.
+Aqui descreveremos as punições aplicadas em diversos cenários. A motivação por trás desse levantamento é a avaliação da severidade com que se pune, sendo a impunidade uma preocupação latente.
 
-As questões norteadoras deste eixo são:
+Os eixos de investigação deste tópico serão delimitados pelos sete tipos de punição disponíveis, com o intuito de compreender a aplicação de cada uma das penalizações. Quando houver necessidade, subtemas importantes de um determinado tipo de punição serão analisados a parte.
 
-1. Quais são as punições aplicadas à danos morais?
-1. Quais são as punições aplicadas à danos patrimoniais?
-1. Qual é a relação entre multas e danos patrimoniais?
+<!-- ## Tempos -->
 
----------------------------------------------------------------------
+<!-- Existem três tipos de punição associadas a tempos: -->
 
-## Tempos
+<!-- - Pena privativa de liberdade. -->
+<!-- - Suspensão dos Direitos Políticos. -->
+<!-- - Proibição de Contratar com o Poder Público ou receber incentivos fiscais ou creditícios, direta ou indiretamente, ainda que por intermédio de pessoa jurídica da qual seja sócio majoritário. -->
 
-Existem três tipos de punição associadas a tempos:
+<!-- Com base nisso, temos duas questões norteadoras principais -->
 
-- Pena privativa de liberdade.
-- Suspensão dos Direitos Políticos.
-- Proibição de Contratar com o Poder Público ou receber incentivos fiscais ou creditícios, direta ou indiretamente, ainda que por intermédio de pessoa jurídica da qual seja sócio majoritário.
+<!-- 1. Como se distribuem os tempos das punições? -->
+<!-- 1. Como se comportam os tempos dos processos? -->
 
-Com base nisso, temos duas questões norteadoras principais
+<!-- ```{r} -->
+<!-- # Estratégia -->
+<!-- #  -->
+<!-- # Criar um BD de filtros e rodar os scripts de R para cada combinação -->
+<!-- ``` -->
 
-1. Como se distribuem os tempos das punições?
-1. Como se comportam os tempos dos processos?
+## Características importantes
 
-```{r}
-# Estratégia
-# 
-# Criar um BD de filtros e rodar os scripts de R para cada combinação
-```
+Algumas características dos registros do CNIA serão comentadas em praticamente todas as análises. No geral, essas características dividem os processos de acordo com aspectos qualitativos fundamentais e por isso modificam significativamente a interpretação dos resultados.  
+
+As condenações do CNIA são separadas em dois tipos. A primeira classificação define as sentenças que transitaram em julgado. Já o segundo grupo corresponde às sentenças proferidas por órgãos colegiados, mesmo que nesse grupo também encontrem-se condenações julgados em primeiro grau. Essa aparente incoerência de nomenclatura será resolvida entendendo que o segundo grupo define as condenações que ainda não transitaram em julgado, não importando a instância em que correram.
+
+A discriminação dos trânsitos em julgado do CNIA é importante pois possibilita o estudo de sentenças em que não cabem recursos. No restante deste relatório, a comparação de estatísticas calculadas a partir de sentenças definitivas e não-definitivas será utilizada para caracterizar o desfecho dos recursos. Essa separação é especialmente importante no estudo das punições aplicadas, mas também tem um papel importante no levantamento de danos patrimoniais.
+
+Além dos tipos de condenação, outra separação importante é a classificação de processos em penais e cíveis. Diversas vezes vamos separar as análises considerando esse filtro, pois esses dois tipos de processo tem características de registro e de punições aplicadas bastante diferentes. 
 

@@ -2,11 +2,11 @@
 
 ## Estrutura de análise
 
-Neste capítulo, vamos investigar os danos que as condutas dos condenados cadastrados no CNIA causaram ao Estado.
+Neste capítulo, vamos investigar os danos que as condutas dos condenados cadastrados no CNIA causaram ao Estado. Vamos admitir que os danos registrados no CNIA são (i) danos patrimoniais, que são medidos em valores monetários nas sentenças em que o réu foi condenado ao ressarcimento integral do dano causado ou (ii) danos morais, que são medidos através do assunto da condenação penal.
 
-A primeira questão norteadora deste eixo questiona a natureza dos danos causados. Neste relatório, vamos admitir que os danos registrados no CNIA são (i) danos patrimoniais, que são medidos em valores monetários nas sentenças em que o réu foi condenado ao ressarcimento integral do dano causado ou (ii) danos morais, que são máculas na reputação do Estado causadas pela má conduta dos seus representantes.
+Em vários momentos a análise separará os casos em que a condenação foi proferida por um órgão colegiado ou se o processo já transitou em julgado. Essa separação é importante por dois motivos: (i) sentenças que transitaram em julgado são mais "definitivas", uma vez que não podem ser anuladas em recurso, e (ii) sentenças que transitaram em julgado provavelmente foram, serão ou estão sendo cumpridas.
 
-Essas duas possibilidades serão tratadas separadamente nas duas subseções que seguem. Os tópicos dentro das subseções respondem às questões norteadoras conforme levantadas no capítulo anterior.
+Os dois tipos de dano mencionados acima serão tratadas separadamente nas duas subseções que seguem. Os tópicos dentro das subseções respondem aos eixos investigativos conforme levantados no capítulo anterior.
 
 ## Danos patrimoniais
 
@@ -43,21 +43,57 @@ prop_arrumada <- tidy_cnc %>%
   summarise(total = sum(teve_ressarcimento)/n()) %>% 
   with(total) %>% 
   percent
+```
+
+<!-- ### Frequência -->
+
+<!-- Utilizando a tipologia induzida pelos registros do CNIA, os danos patrimoniais serão medidos através das sentenças que impõem o ressarcimento integral dos danos causados. Do total de `r total` condenações, `r total_ressarcimento` resultaram em ressarcimentos integrais dos danos. Essa quantidade corresponde a um percentual de `r prop_total`. No entanto, essa proporção está levando em conta as `r total - total_civeis` condenações criminais, que são pouco sucetíveis à ressarcimentos financeiros: identificamos danos patrimoniais em apenas `r prop_criminal` das condenações criminais.  -->
+
+<!-- ```{r} -->
+<!-- tidy_cnc %>%  -->
+<!--   with(table(assunto_penal_any, teve_ressarcimento)) -->
+<!-- ``` -->
+
+<!-- Os assuntos processuais da árvore do Direito Penal em que há ressarcimento estão listadas em \@ref(tab:crimes_com_ressarcimento). Considerando apenas esses casos como sucetíveis à condenações de ressarcimento, a proporção mencionada no parágrafo anterior é corrigida para `r prop_arrumada` dos casos. -->
+
+<!-- ```{r crimes_com_ressarcimento} -->
+<!-- tabela_de_crimes %>%  -->
+<!--   arrange(desc(prop_ress)) %>%  -->
+<!--   mutate(prop_ress = percent(prop_ress), -->
+<!--          assunto_nm_1 = str_wrap(assunto_nm_1, 20)) %>%  -->
+<!--   setNames(c("Assunto","Proporção de ressarcimentos","Frequência")) %>%  -->
+<!--   knitr::kable(caption = "Crimes")  -->
+<!-- ``` -->
+
+### Volume das perdas
+
+```{r}
 
 tidy_ressarcimento <- tidy_cnc %>% 
-  filter(teve_ressarcimento, vl_ressarcimento <= 5.877361e+07)
+  ungroup() %>% 
+  filter(teve_ressarcimento) #%>% 
+#  distinct(n_processo, .keep_all = T)
 
 tidy_ressarcimento_pos_cnc <- tidy_ressarcimento %>% 
   filter(dt_pena > min(dt_cadastro))
 
+tidy_ressarcimento_pos_cnc_sem_estranhos <- tidy_ressarcimento_pos_cnc %>% 
+  filter(vl_ressarcimento <= 5.877361e+07)
+
 ressarcimentos_por_ano <- tidy_ressarcimento_pos_cnc %>% 
   mutate(ano = year(dt_pena)) %>% 
-  filter(ano <= 2015, vl_ressarcimento <= 5.877361e+07) %>% 
+  filter(ano <= 2015) %>% 
   group_by(ano) %>% 
   summarise(ress = sum(vl_ressarcimento)/10^6)
 
-cadastrados_por_ano_ultimos_6_meses <- tidy_ressarcimento_pos_cnc %>% 
-    filter(dt_cadastro > max(dt_cadastro)%m-%months(6), vl_ressarcimento <= 5.877361e+07) %>% 
+ressarcimentos_por_ano_sem_estranhos <- tidy_ressarcimento_pos_cnc_sem_estranhos %>% 
+  mutate(ano = year(dt_pena)) %>% 
+  filter(ano <= 2015) %>% 
+  group_by(ano) %>% 
+  summarise(ress = sum(vl_ressarcimento)/10^6)
+
+cadastrados_por_ano_ultimos_6_meses <- tidy_ressarcimento_pos_cnc_sem_estranhos %>% 
+    filter(dt_cadastro > max(dt_cadastro)%m-%months(6)) %>% 
     mutate(ano = year(dt_pena)) %>% 
     group_by(ano) %>% 
     summarise(freq = n(),
@@ -66,46 +102,26 @@ cadastrados_por_ano_ultimos_6_meses <- tidy_ressarcimento_pos_cnc %>%
 soma <- ressarcimentos_por_ano %>% 
   with(sum(ress))
 
+soma_sem_estranhos <- ressarcimentos_por_ano_sem_estranhos %>% 
+  with(sum(ress))
+
 ressarcimentos_bizarros <- tidy_ressarcimento_pos_cnc %>% 
-  filter(vl_ressarcimento <= 5.877361e+07)
+  filter(vl_ressarcimento >= 5.877361e+07)
 
 ```
 
-### Frequência
+Considerando `r nrow(tidy_ressarcimento_pos_cnc)` condenações registradas após a criação do cadastro, em 2008, o dano total estimado é de `r soma` milhões de reais. Entretanto, existem alguns registros com cifras grandes demais (listados em \@ref(tab: ressarcimentos_bizarros). Excluindo esses casos, a estimativa do dano cai para `r soma_sem_estranhos` milhões de reais.
 
-Utilizando a tipologia induzida pelos registros do CNIA, os danos patrimoniais serão medidos através das sentenças que impõem o ressarcimento integral dos danos causados. Do total de `r total` condenações, `r total_ressarcimento` resultaram em ressarcimentos integrais dos danos. Essa quantidade corresponde a um percentual de `r prop_total` das condenações resultando em ressarcimento de danos. No entanto, essa proporção está levando em conta as `r total - total_civeis` condenações criminais, que são pouco sucetíveis à ressarcimentos financeiros: identificamos danos patrimoniais em apenas `r prop_criminal` das condenações criminais. 
+```{r ressarcimentos_bizarros}
 
-```{r}
-tidy_cnc %>% 
-  with(table(assunto_penal_any, teve_ressarcimento))
-```
-
-Os assuntos processuais da árvore do Direito Penal em que há ressarcimento estão listadas em \@ref(tab:crimes_com_ressarcimento). Considerando apenas esses casos como sucetíveis à condenações de ressarcimento pode-se dizer que ocorre o ressarcimento em `r prop_arrumada` das condenações em que a compensação é factível.
-
-```{r crimes_com_ressarcimento}
-tabela_de_crimes %>% 
-  arrange(desc(prop_ress)) %>% 
-  mutate(prop_ress = percent(prop_ress),
-         assunto_nm_1 = str_wrap(assunto_nm_1, 20)) %>% 
-  setNames(c("Assunto","Proporção de ressarcimentos","Frequência")) %>% 
-  knitr::kable(caption = "Crimes") 
-```
-
-### Tamanho e tempo
-
-Passando a falar de valores de ressarcimento, nas `r nrow(tidy_ressarcimento_pos_cnc)` condenações registradas após a criação do cadastro, em 2008, o dano total estimado é de `r soma` milhões de reais. Essa quantidade foi estimada desconsiderando eventos atípicos. Além disso, essa quantidade pode ser interpretada como um limite inferior para o dano efetivamente causado, já que novas condenações são registradas no CNIA todos os dias, conforme indica a tabela \@ref(tab: cadastros_novos). 
-
-```{r}
-
-ressarcimentos_por_ano %>% 
-  ggplot(aes(x = ano, y = ress)) +
-  geom_line(col = 'royalblue') + 
-  theme_bw(15) +
-  scale_x_continuous(breaks = min(ressarcimentos_por_ano$ano):max(ressarcimentos_por_ano$ano)) +
-  ylab("Ressarcimento até\no momento (MM R$)") + 
-  xlab("Ano")
+ressarcimentos_bizarros %>% 
+  select(dt_pena, vl_ressarcimento, nm_pessoa) %>% 
+  DT::datatable()
 
 ```
+
+
+É importante ressaltar que essa quantidade deve ser interpretada como um limite inferior para o dano efetivamente causado, pois novas condenações são registradas no CNIA todos os dias, conforme indica a tabela \@ref(tab: cadastros_novos). Além disso, também é importante considerar que as nossas estimativas subestimam o dano causado por que estamos medindo o tamanho do ressarcimento em processos com esse tipo de pena, deixando de fora os casos que ainda não foram à justiça ou que não resultaram em penas desse tipo.
 
 ```{r cadastros_novos}
 cadastrados_por_ano_ultimos_6_meses %>% 
@@ -113,22 +129,201 @@ cadastrados_por_ano_ultimos_6_meses %>%
   knitr::kable(caption = "Anos de condenação das condenações com ressarcimento cadastradas nos últimos 6 meses.")
 ```
 
-<!-- tem que fazer a conta do valor ressarcido considerando só as condenações após o começo dos registros, porque senão estaremos fazendo uma análise prospectiva -->
+<!-- tem que fazer a conta do valor ressarcido considerando só as condenações após o começo dos registros, porque senão estaremos fazendo uma análise retrospectiva -->
+
+```{r}
+
+ressarcimentos_por_ano_sem_estranhos <- tidy_ressarcimento_pos_cnc_sem_estranhos %>% 
+  mutate(ano = year(dt_pena)) %>% 
+  filter(ano <= 2015, tipo_pena == "Trânsito em julgado") %>% 
+  group_by(ano) %>% 
+  summarise(ress = sum(vl_ressarcimento)/10^6)
+
+soma_sem_estranhos_em_transito_em_julgado <- ressarcimentos_por_ano_sem_estranhos %>% 
+  with(sum(ress))
+```
+
+É possível utilizar apenas as sentenças que transitaram em julgado para calcular uma cota inferior ainda mais confiável. Considerando apenas essas sentenças, a justiça brasileira exigiu  o ressarcimento de `r soma_sem_estranhos_em_transito_em_julgado` milhões de reais. A diferença de `r soma_em_estranhos - soma_sem_estranhos_em_transito_em_julgado` milhões ainda pode ser discutia em eventuais recusos à instâncias superiores.
+
+### Tendência
+
+Os `r soma_sem_estranhos` milhões de reais ressarcidos distribuem-se ao longo dos anos de condenação com uma tendência de crescimento. Essa tendência pode indicar uma maior eficácia no combate à improbidade administrativa, mas também pode indicar uma melhora no cadastramento de informações no CNIA.
+
+```{r}
+
+ressarcimentos_por_ano_sem_estranhos %>%
+  filter(ano >= 2009) %>% 
+  ggplot(aes(x = ano, y = ress)) +
+  geom_bar(fill = 'royalblue', stat = 'identity', color = 'black') + 
+  theme_bw(15) +
+  scale_x_continuous(breaks = min(ressarcimentos_por_ano_sem_estranhos$ano):max(ressarcimentos_por_ano_sem_estranhos$ano)) +
+  ylab("Ressarcimento cadastrado até\no momento (MM R$)") + 
+  xlab("Ano de condenação")
+```
+
+Uma terceira hipótese para o aumento nos anos de 2013 e 2014 está nos altíssimos valores de ressarcimento observados nesses anos. Os máximos em 2013 e 2014 correspondem respectivamente a 35 milhões e 58 milhões reais, sendo que os máximo dos anos anteriores no máximo bateram os 22 milhões de reais.
+
+```{r}
+tidy_ressarcimento_pos_cnc_sem_estranhos %>% 
+  mutate(ano = year(dt_pena)) %>% 
+  group_by(ano) %>% 
+  do(qtl = quantile(.$vl_ressarcimento) %>% 
+       broom::tidy()) %>% 
+  unnest(qtl) %>% 
+  mutate(names = factor(names,c("0%","25%","50%","75%","100%")),
+         x = round(x/10^6, 3)) %>% 
+  spread(names, x) %>% 
+  setNames(c("Ano", "Mínimo","1º Quartil","2º Quartil","3º Quartil","Máximo"))
+```
+
+Excluindo as 6 condenações de 2013 e 2014 listadas abaixo, a discrepância entre os totais ressarcidos nos anos fica menor. Entretanto, ainda identifica-se um aumento no terceiro quartil dos anos de 2013 e 2014.
+
+```{r}
+tidy_ressarcimento_pos_cnc_sem_estranhos %>% 
+  select(dt_pena, vl_ressarcimento) %>%
+  top_n(-(3452-6)) %>% 
+  mutate(ano = year(dt_pena)) %>% 
+  filter(ano >= 2009, ano <= 2015) %>% 
+  group_by(ano) %>% 
+  summarise(ress = sum(vl_ressarcimento)/10^6) %>%
+  ggplot(aes(x = ano, y = ress)) +
+   geom_bar(fill = 'royalblue', stat = 'identity', color = 'black') + 
+  theme_bw(15) +
+  scale_x_continuous(breaks = min(ressarcimentos_por_ano_sem_estranhos$ano):max(ressarcimentos_por_ano_sem_estranhos$ano)) +
+  ylab("Ressarcimento cadastrado até\no momento (MM R$)") + 
+  xlab("Ano de condenação")
+```
+
+```{r}
+tidy_ressarcimento_pos_cnc_sem_estranhos %>% 
+  select(dt_pena, vl_ressarcimento) %>%
+  top_n(-(3452-6)) %>% 
+  mutate(ano = year(dt_pena)) %>% 
+  filter(ano >= 2009, ano <= 2015) %>% 
+  group_by(ano) %>% 
+  nest(vl_ressarcimento) %>% 
+  mutate(qtl = map(data,~broom::tidy(quantile(.x$vl_ressarcimento)))) %>% 
+  unnest(qtl) %>% 
+  mutate(names = factor(names,c("0%","25%","50%","75%","100%")),
+         x = round(x/10^6, 3)) %>% 
+  spread(names, x) %>% 
+  setNames(c("Ano", "Mínimo","1º Quartil","2º Quartil","3º Quartil","Máximo"))
+```
 
 ### Órgãos
 
-Os órgãos mais atingidos pelos danos patrimoniais são as prefeituras municipais.
+```{r}
+
+lista_de_regex <- list(regex_vereadores = regex("vereadores|c[aâ]mara", ignore_case = T),
+regex_secretaria = regex("secretaria", ignore_case = T),
+regex_municipio = regex("munic[íi]pio", ignore_case = T),
+regex_prefeitura = regex("prefeit", ignore_case = T),
+regex_assembleia_legislativa = regex("assembl[ée]ia legis", ignore_case = T),
+regex_policia = regex("pol[íi]cia", ignore_case = T),
+regex_poder_executivo = regex("executivo|poder executivo", ignore_case = T),
+regex_poder_legislativo = regex("poder legislativo", ignore_case = T),
+regex_hospital = regex("hospitais", ignore_case = T),
+regex_correios = regex("correio|ect|ebct", ignore_case = T),
+regex_caixa = regex("CAIXA ECON[Ôo]MICA FEDERAL|cef", ignore_case = T),
+regex_inss = regex("INSTITUTO NACIONAL DO SEGURO|INSS", ignore_case = T))
+
+joga_resto_no_outros <- function(string, N, labell = 'outros'){
+
+d <- data_frame(coluna = string)
+
+left_join(d, y = d %>% count(coluna), by = 'coluna') %>% 
+  mutate(coluna = ifelse(n < N, labell, coluna)) %>% 
+  with(coluna)
+}
+
+troca_string_por_regex <- function(vetor, regexes){
+  map_chr(vetor, function(x){
+       pareamentos <- map(regexes, str_detect, string = x) %>% 
+       keep(~.x) %>% 
+       names %>% 
+       paste(collapse = ', ')
+      
+       if(pareamentos == ''){pareamentos <- x}
+       return(pareamentos)
+  })
+}
+
+tidy_ressarcimento_pos_cnc_sem_estranhos_org <-  tidy_ressarcimento_pos_cnc_sem_estranhos %>% 
+  mutate(novo_orgao = troca_string_por_regex(orgao, lista_de_regex),
+         novo_orgao = joga_resto_no_outros(novo_orgao, 5),
+         novo_orgao = str_replace_all(novo_orgao,"regex_",""),
+        novo_orgao = str_replace_all(novo_orgao,"_"," "),
+         novo_orgao = str_to_title(novo_orgao)) %>% 
+  replace_na(list(novo_orgao = "Não Identificado"))
+```
+
+Os órgãos mais atingidos pelos danos patrimoniais são as prefeituras. Entretanto, o alto número de processos com órgãos mal definidos dificultam uma análise mais detalhada dos casos.
 
 ```{r}
-  tidy_ressarcimento_pos_cnc %>% 
-  group_by(orgao) %>% 
-  summarise(ress = round(sum(vl_ressarcimento, na.rm = T)/10^6, 2)) %>% 
-  arrange(desc(ress)) %>% 
-  setNames(c("Órgão", "Ressarcimento (MM R$)")) %>% 
+colunas <- c("Órgão", "Ressarcimento em\ncondenações de órgãos\ncolegiados (MM R$)","Ressarcimento em\ncondenações que transitaram\nem julgado (MM R$)")
+
+tidy_ressarcimento_pos_cnc_sem_estranhos_org %>% 
+  group_by(novo_orgao, tipo_pena) %>% 
+  summarise(vl_ressarcimento = sum(vl_ressarcimento)/10^6) %>% 
+  spread(tipo_pena, vl_ressarcimento) %>% 
+  arrange(desc(`Trânsito em julgado`)) %>%
+  ungroup() %>% 
+  mutate(novo_orgao = str_to_title(str_replace_all(novo_orgao,"[_]"," "))) %>% 
+  setNames(c("X1","X2","X3")) %>% 
+  replace_na(list(X1 = 0, X2 = 0, X3 =0)) %>% 
+  setNames(colunas) %>%
+  DT::datatable()
+```
+
+### Instância
+
+Com relação a instância, os danos patrimoniais dificilmente transitam em julgado vindos da segunda instância. Isso pode indicar que os 159 milhões de reais que ainda não transitaram estão vulneráveis.
+
+```{r}
+tidy_ressarcimento_pos_cnc_sem_estranhos %>% 
+  group_by(instancia, tipo_pena) %>% 
+  summarise(vl_ressarcimento = sum(vl_ressarcimento)/10^6) %>% 
+  spread(tipo_pena, vl_ressarcimento) %>% 
+  ungroup() %>% 
+  mutate(instancia = str_to_title(instancia)) %>% 
+  setNames(c("Instância",colunas[2:3])) %>% 
   knitr::kable()
 ```
 
+### Esfera
+
+Com relação às esferas, os danos em sua maior parte vêm da esfera estadual. Entretanto, a proporção de ressarcimentos vinda da esfera federal chega a 37%.
+
+```{r}
+tidy_ressarcimento_pos_cnc_sem_estranhos %>% 
+  group_by(esfera_processo, tipo_pena) %>% 
+  summarise(vl_ressarcimento = sum(vl_ressarcimento)/10^6) %>% 
+  spread(tipo_pena, vl_ressarcimento) %>% 
+  ungroup() %>% 
+  mutate(esfera_processo = str_to_title(esfera_processo)) %>% 
+  setNames(c("Esfera",colunas[2:3])) %>% 
+  knitr::kable()
+```
+
+### Tipos de pessoa
+
+Com relação aos tipos de pessoa, o ressarcimento médio é maior para pessoas jurídicas. De toda forma, o ressarcimento cobrado nesses casos é de apenas 18%.
+
+```{r}
+tidy_cnc_ressarcimento_pos_cnc_sem_estranhos_org %>% 
+  group_by(tipo_pessoa) %>% 
+  summarise(vl_ressarcimento = sum(vl_ressarcimento)/10^6,
+            total = n()) %>% 
+  arrange(desc(vl_ressarcimento)) %>% 
+  mutate(tipo_pessoa = str_to_title(tipo_pessoa),
+         media = vl_ressarcimento/total) %>% 
+  setNames(c("Tipo de Pessoa", "Ressarcimento (MM R$)","Número de Condenados","Média (MM R$)")) %>% 
+  knitr::kable(digits = 2)
+```
+
 ### Distribuição geográfica
+
+A distribuição geográfica dos dados patrimoniais cresce do norte para o sul, bem como o PIB. Essa conclusão é válida se considerarmos ou não os processos que transitaram em julgado. Entretanto, essa tendência geral tem duas exceções: (i) a soma das condenações de ressarcimento em Roraima é comparável à cifra de São Paulo e (ii) Rondônia, Acre e Tocantins.
 
 ```{r ress_abs}
 
@@ -136,16 +331,16 @@ N <- 12
 
 # cortes <- c(0, rep(c(1,5), N)*rep(10^(1:N), each = 2)) 
 
-cortes <- c(0, 10^(1:N))
+cortes <- c(0, 10^(1:7),5*10^7,10^(8:N))
 
 brks <- cut(c(cortes), breaks = c(cortes))
 
 lbs <- c("0","<10","10<100","100<1M",
          "1M<10M","10M<100M","100M<1MM","1MM<10MM",
-         "10MM<100MM","100MM<1Bi","1Bi<10Bi", "10Bi<100Bi",
+         "10MM<50MM","50MM<100MM","100MM<1Bi","1Bi<10Bi", "10Bi<100Bi",
          "100Bi<1Tri")
 
-tidy_ressarcimento_pos_cnc %>%
+tidy_ressarcimento_pos_cnc_sem_estranhos %>%
     mutate(id = uf_processo) %>%
     group_by(id, tipo_pena) %>%
     summarise(vl_ressarcimento = sum(vl_ressarcimento)) %>%
@@ -162,30 +357,39 @@ tidy_ressarcimento_pos_cnc %>%
     }
 ```
 
+A tabela com os valores ressarcidos e os respectivos números de processos segue abaixo. Note que não foi possível identificar a unidade da federação em 1850 processos, ou o equivalente a 350 milhões de reais.
+
+```{r}
+tidy_ressarcimento_pos_cnc_sem_estranhos %>%
+    mutate(id = uf_processo) %>%
+    group_by(id) %>%
+    summarise(vl_ressarcimento = sum(vl_ressarcimento),
+              total = n())
+```
+
+Quando tomamos a distribuição per capita dos ressarcimentos, a distribuição geográfica tem novos polos. No Acre e em Roraima a taxa de ressarcimento por habitante chega a R$20,00. 
+
 ```{r ress_rel}
 
-cortes_tx <- seq(0,5,by = 0.5)
+cortes_tx <- c(0,0.1,0.25,0.5,1,2.5,5,10,15,20)
 
 brks_tx <- cut(c(cortes_tx), breaks = c(cortes_tx))
 
-lbs_tx <- c("NA","<0.5","10<100","100<1M",
-         "1M<10M","10M<100M","100M<1MM","1MM<10MM",
-         "10MM<100MM","100MM<1Bi","1Bi<10Bi", "10Bi<100Bi",
-         "100Bi<1Tri")
+lbs_tx <- brks_tx
 
-tidy_ressarcimento_pos_cnc %>%
+tidy_cnc_ressarcimento_pos_cnc_processos %>%
     mutate(id = uf_processo) %>%
     group_by(id, tipo_pena) %>%
     summarise(vl_ressarcimento = sum(vl_ressarcimento)) %>%
     inner_join(pnud_uf, 'id') %>%
-    mutate(vl_ressarcimento = vl_ressarcimento / popt * 100000) %>%
+    mutate(vl_ressarcimento = vl_ressarcimento / popt) %>%
     ungroup() %>% 
     complete(id, tipo_pena, fill = list(vl_ressarcimento = 0)) %>% 
-    mutate(vl_ressarcimento = cut(vl_ressarcimento, cortes)) %>% 
+    mutate(vl_ressarcimento = cut(vl_ressarcimento, cortes_tx)) %>% 
     inner_join(br_uf_map) %>% {
       ggplot(.) +
         geom_map(aes(x = long, y = lat, map_id = id, fill = vl_ressarcimento), color = 'gray30', map = ., data = .) +
-        scale_fill_brewer(palette = 'PuRd', breaks = brks, labels = lbs, name = 'Ressarcimento per capita') + 
+        scale_fill_brewer(palette = 'PuRd', breaks = brks_tx, labels = lbs_tx, name = 'Ressarcimento per capita \n (R$\\habitante)') + 
         coord_equal() +
         theme_void() +
         facet_wrap(~tipo_pena)
@@ -193,12 +397,231 @@ tidy_ressarcimento_pos_cnc %>%
 
 ```
 
-## Perfis
-
-### Processos
-
-
-
-### Condenados
-
 ## Condenações Criminais
+
+### Tendência no tempo
+
+O número de condenações criminais no CNIA é muito maior do que o número de condenações cíveis, principalmente após 2013. Nesse ano, a proporção condenações cíveis da base caiu dos 75% do ano anterior para 40%. Em 2015, 90% das condenações do CNIA eram condenações criminais.
+
+```{r}
+
+tidy_cnc %>%
+  distinct(n_processo, .keep_all = T) %>% 
+  filter(dt_pena > min(dt_cadastro)) %>% 
+  mutate(ano = year(dt_pena)) %>% 
+  group_by(ano) %>% 
+  count(assunto_penal_any) %>% 
+  ggplot(aes(x = ano, y = n)) +
+  geom_bar(aes(fill = assunto_penal_any), stat = 'identity', position = 'dodge') +
+  theme_bw(15) +
+  theme(legend.position = 'bottom') +
+  scale_x_continuous(breaks = 2007:2015) +
+  xlab("")
+
+```
+
+```{r}
+
+tidy_cnc %>%
+  distinct(n_processo, .keep_all = T) %>% 
+  filter(dt_pena > min(dt_cadastro)) %>% 
+  mutate(ano = year(dt_pena)) %>% 
+  group_by(ano) %>% 
+  count(assunto_penal_any) %>% 
+  mutate(prop = n/sum(n)) %>% 
+  ggplot(aes(x = ano, y = prop)) +
+  geom_bar(aes(fill = assunto_penal_any), stat = 'identity', position = 'dodge') +
+  theme_bw(15) +
+  theme(legend.position = 'bottom') +
+  scale_y_continuous(labels = scales::percent) +
+  scale_x_continuous(breaks = 2007:2015) +
+  xlab("")
+
+```
+
+### Volume do dano
+
+```{r}
+joga_resto_no_outros <- function(string, N, labell = 'outros'){
+
+d <- data_frame(coluna = string)
+
+left_join(d, y = d %>% count(coluna), by = 'coluna') %>% 
+  mutate(coluna = ifelse(n < N, labell, coluna)) %>% 
+  with(coluna)
+}
+
+lista_de_regex <- list(regex_roubo = regex("roubo", ignore_case = T),
+regex_homicidio = regex("homic[íi]dio|Crimes conta a vida", ignore_case = T),
+regex_estupro = regex("estupro|dignidade sexual", ignore_case = T),
+regex_trafico = regex("tr[áa]fico", ignore_case = T),
+regex_quadrila = regex("quadrilha", ignore_case = T),
+regex_chaci = regex("Adulteração de Sinal Identificador de Veículo", ignore_case = T),
+regex_receptacao = regex("Receptação", ignore_case = T),
+regex_furto = regex("Furto", ignore_case  = T),
+regex_patrimonio = regex("Crimes contra o Patrimônio|Crimes contra a Ordem Tributária|Crimes Praticados por Particular Contra a Administração em Geral|Crimes Praticados por Funcionários Públicos Contra a Administração em Geral|Crimes Praticados por Particular Contra a Administração Pública Estrangeira|Crimes contra a Economia Popular|Crimes Contra as Finanças Públicas|Crimes previstos na legislação extravagante", ignore_case = T))
+
+troca_string_por_regex <- function(vetor, regexes){
+map_chr(vetor, function(x){
+       pareamentos <- map(regexes, str_detect, string = x) %>% 
+       keep(~.x) %>% 
+       names %>% 
+       paste(collapse = ', ')
+      
+       if(pareamentos == ''){pareamentos <- x}
+       return(pareamentos)
+})}
+
+tidy_crimes <- tidy_cnc %>%
+  filter(assunto_penal_any) %>%
+  gather(nm_ass, assunto, dplyr::contains("assunto_nm")) %>% 
+  filter(!is.na(assunto)) %>%
+  group_by(arq) %>% 
+  mutate(assunto_paste = paste(assunto, collapse = ' ')) %>% 
+  distinct(arq, .keep_all = T) %>% 
+  ungroup() %>% 
+  #mutate(assunto_nm_1 = str_extract(assunto_nm_1, regex("^[a-zçãéíéóúâêúá]+", ignore_case = T))) %>% 
+  mutate(assunto_reclass = troca_string_por_regex(assunto_paste, lista_de_regex),
+         assunto_reclass = joga_resto_no_outros(assunto_reclass, 400),
+         assunto_reclass = str_to_title(str_replace(assunto_reclass, "regex_","")), 
+         assunto_reclass = fct_relevel(assunto_reclass,
+                                    'Outros',
+                                    'Direito Penal',
+                                    'Patrimonio',
+                                    'Receptacao',
+                                    'Estelionato',
+                                    'Roubo',
+                                    'Trafico',
+                                    'Estupro',
+                                    'Homicidio'))
+```
+
+Tráfico é o crime mais cadastro no CNIA. Ele é seguido pelos crimes de Roubo e Crimes contra o Patrimônio em geral. 
+
+```{r}
+tidy_crimes %>% 
+  count(assunto_reclass) %>% 
+  arrange(desc(n)) %>% 
+  set_names(c("Crime","Frequência"))
+```
+
+### Órgãos
+
+```{r}
+
+lista_de_regex <- list(regex_vereadores = regex("vereadores|c[aâ]mara", ignore_case = T),
+regex_secretaria = regex("secretaria", ignore_case = T),
+regex_municipio = regex("munic[íi]pio", ignore_case = T),
+regex_prefeitura = regex("prefeit", ignore_case = T),
+regex_assembleia_legislativa = regex("assembl[ée]ia legis", ignore_case = T),
+regex_policia = regex("pol[íi]cia", ignore_case = T),
+regex_poder_executivo = regex("executivo|poder executivo", ignore_case = T),
+regex_poder_legislativo = regex("poder legislativo", ignore_case = T),
+regex_hospital = regex("hospitais", ignore_case = T),
+regex_correios = regex("correio|ect|ebct", ignore_case = T),
+regex_caixa = regex("CAIXA ECON[Ôo]MICA FEDERAL|cef", ignore_case = T),
+regex_inss = regex("INSTITUTO NACIONAL DO SEGURO|INSS", ignore_case = T))
+
+joga_resto_no_outros <- function(string, N, labell = 'outros'){
+
+d <- data_frame(coluna = string)
+
+left_join(d, y = d %>% count(coluna), by = 'coluna') %>% 
+  mutate(coluna = ifelse(n < N, labell, coluna)) %>% 
+  with(coluna)
+}
+
+troca_string_por_regex <- function(vetor, regexes){
+  map_chr(vetor, function(x){
+       pareamentos <- map(regexes, str_detect, string = x) %>% 
+       keep(~.x) %>% 
+       names %>% 
+       paste(collapse = ', ')
+      
+       if(pareamentos == ''){pareamentos <- x}
+       return(pareamentos)
+  })
+}
+
+tidy_crimes_org <- tidy_crimes %>% 
+  mutate(novo_orgao = troca_string_por_regex(orgao, lista_de_regex),
+         novo_orgao = joga_resto_no_outros(novo_orgao, 5),
+         novo_orgao = str_replace_all(novo_orgao,"regex_",""),
+        novo_orgao = str_replace_all(novo_orgao,"_"," "),
+         novo_orgao = str_to_title(novo_orgao)) %>% 
+  replace_na(list(novo_orgao = "Não Identificado"))
+```
+
+Ao contrário do ocorrido com as condenações cíveis, as condenações criminais não concentram-se nos prefeitos e prefeituras. A maior parte dessas condenações recai sobre indíviduos sem identificação de órgão estatal ou cargo.
+
+```{r}
+tidy_crimes_org %>% 
+  count(novo_orgao)
+```
+
+### Instância
+
+Analisando a instância das condenações penais, verificamos que o número de condenações criminais aqui é menor do que nas condenações cíveis. Entretanto, mantém-se baixo o número de processos que transitaram em julgado diretamente da segunda instância.
+
+```{r}
+tidy_crimes %>% 
+  filter(esfera_processo %in% c("Estadual","Federal")) %>% 
+  count(instancia, tipo_pena) %>% 
+  spread(tipo_pena,n)
+```
+
+### Esfera
+
+Ao contrário do que ocorreu nas condenações cíveis, nas condenações criminais quase a totalidade das condenações ocorre na esfera Estadual.
+
+```{r}
+tidy_crimes %>% 
+  filter(esfera_processo %in% c("Estadual","Federal")) %>% 
+  count(esfera_processo)
+```
+
+### Tipo de Pessoa
+
+Existem apenas 6 pessoas jurídicas envolvidas em condenações criminais.
+
+```{r}
+tidy_crimes %>% 
+  count(tipo_pessoa)
+```
+
+### Distribuição geográfica
+
+No CNIA, não constam condenações criminais fora do eixo Sul-Sudeste.
+
+```{r}
+
+# cortes <- c(0, rep(c(1,5), N)*rep(10^(1:N), each = 2)) 
+
+cortes <- c(0, 250, 500, 750, 1000, 1250, 1500, 1750, 2000)
+
+brks <- cut(c(cortes), breaks = c(cortes))
+
+lbs <- c("0","0<250","250<500","500<750","750<1000","1000<1250","1250<1500","1500<1750","1750<2000")
+
+estados <- tidy_cnc$uf_processo %>% unique
+
+tidy_crimes %>%
+    mutate(uf_processo = factor(uf_processo, estados)) %>% 
+    mutate(id = uf_processo,
+           assunto_reclass = as.character(assunto_reclass)) %>%
+    count(id, assunto_reclass) %>% 
+    complete(id, assunto_reclass, fill = list(n = 0)) %>% 
+    ungroup() %>% 
+    mutate(n = cut(n, cortes),
+           id = as.character(id)) %>% 
+    inner_join(br_uf_map) %>% 
+    ungroup() %>% {
+      ggplot(.) +
+        geom_map(aes(x = long, y = lat, map_id = id, fill = n), color = 'gray30', map = ., data = .) +
+        scale_fill_brewer(palette = 'PuRd', breaks = brks, labels = lbs, name = 'Valor do ressarcimento') + 
+        coord_equal() +
+        theme_void() +
+        facet_wrap(~assunto_reclass, ncol = 3)
+    }
+```
+
